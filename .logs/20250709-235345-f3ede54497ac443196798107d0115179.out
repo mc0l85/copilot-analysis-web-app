@@ -13,3 +13,15 @@
  ✓ Compiled /api/test-results in 250ms (928 modules)
  POST /api/test-results 200 in 352ms
  POST /api/test-results 200 in 357ms
+ GET / 200 in 71ms
+ GET / 200 in 26ms
+ POST /api/test-results 200 in 24ms
+ POST /api/test-results 200 in 24ms
+ GET / 200 in 28ms
+ GET / 200 in 25ms
+ POST /api/test-results 200 in 26ms
+ POST /api/test-results 200 in 24ms
+ GET / 200 in 34ms
+ GET / 200 in 28ms
+ POST /api/test-results 200 in 22ms
+ POST /api/test-results 200 in 21ms
