@@ -105,7 +105,7 @@ cd copilot-analysis-web-app
 cd app
 
 # Install Node.js dependencies
-npm install
+npm install --legacy-peer-deps
 
 # Generate Prisma client
 npx prisma generate
