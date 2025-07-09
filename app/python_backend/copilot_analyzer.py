@@ -278,26 +278,195 @@ class CopilotAnalyzer:
         
         return top_utilizers_df, under_utilized_df, reallocation_df
         
-    def create_excel_report(self, filename, top_utilizers_df, under_utilized_df, reallocation_df):
-        """Create Excel report"""
+    def style_excel_sheet(self, worksheet, df):
+        """Applies styling to an Excel worksheet."""
+        # If the dataframe is empty, there is nothing to style.
+        if df.empty:
+            return
+
+        # Header styling with dark background and white text
+        header_fill = PatternFill(start_color="2d3748", end_color="2d3748", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF")
+        for col_num, column_title in enumerate(df.columns, 1):
+            cell = worksheet.cell(row=1, column=col_num)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal='center')
+
+        # Zebra striping for alternating rows
+        stripe_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+        for row_index in range(2, len(df) + 2):
+            if row_index % 2 == 1:  # Apply to odd data rows (3, 5, 7...)
+                for col_index in range(1, len(df.columns) + 1):
+                    worksheet.cell(row=row_index, column=col_index).fill = stripe_fill
+
+        # Auto-adjust column widths
+        for col_num, column_title in enumerate(df.columns, 1):
+            max_length = 0
+            column_letter = get_column_letter(col_num)
+            if len(str(column_title)) > max_length:
+                max_length = len(str(column_title))
+            for i, cell_value in enumerate(df[column_title], 2):
+                if len(str(cell_value)) > max_length:
+                    max_length = len(str(cell_value))
+            adjusted_width = (max_length + 2)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        # Color scale and data bar formatting
+        red_color, yellow_color, green_color = "F8696B", "FFEB84", "63BE7B"
+        
+        # Conditional formatting with color scales for Engagement Score
+        if 'Engagement Score' in df.columns:
+            score_col_letter = get_column_letter(df.columns.get_loc('Engagement Score') + 1)
+            score_range = f"{score_col_letter}2:{score_col_letter}{len(df)+1}"
+            worksheet.conditional_formatting.add(score_range,
+                ColorScaleRule(start_type='min', start_color=red_color,
+                               mid_type='percentile', mid_value=50, mid_color=yellow_color,
+                               end_type='max', end_color=green_color))
+
+        # Data bars for Usage Consistency percentage
+        if 'Usage Consistency (%)' in df.columns:
+            consistency_col_letter = get_column_letter(df.columns.get_loc('Usage Consistency (%)') + 1)
+            consistency_range = f"{consistency_col_letter}2:{consistency_col_letter}{len(df)+1}"
+            worksheet.conditional_formatting.add(consistency_range,
+                DataBarRule(start_type='min', end_type='max', color=green_color))
+
+    def create_visualizations(self, utilized_df, top_df, under_df, matched_df, output_folder):
+        """Create visualizations for the Excel report"""
+        charts = {}
+        plt.style.use('default')
+        
         try:
+            # Engagement Score Distribution
+            if 'Engagement Score' in utilized_df.columns and not utilized_df.empty:
+                plt.figure(figsize=(10, 6))
+                utilized_df['Engagement Score'].plot(kind='hist', bins=20, title='Distribution of User Engagement Score')
+                plt.xlabel('Engagement Score (Consistency + Complexity + Avg Tools/Rpt)')
+                plt.ylabel('Number of Users')
+                plt.tight_layout()
+                charts['engagement_score_hist'] = os.path.join(output_folder, 'engagement_score_hist.png')
+                plt.savefig(charts['engagement_score_hist'], dpi=150, bbox_inches='tight')
+                plt.close()
+            
+            # Tool Usage by Top Utilizers
+            if not matched_df.empty and not top_df.empty:
+                tool_cols = [col for col in matched_df.columns if 'Last activity date of' in col]
+                top_user_activity = matched_df[matched_df['User Principal Name'].isin(top_df['Email'])]
+                if not top_user_activity.empty and tool_cols:
+                    tool_usage_counts = top_user_activity[tool_cols].notna().sum().sort_values(ascending=False)
+                    if not tool_usage_counts.empty:
+                        tool_usage_counts.index = tool_usage_counts.index.str.replace('Last activity date of ', '').str.replace(' \(UTC\)', '')
+                        plt.figure(figsize=(12, 7))
+                        tool_usage_counts.plot(kind='bar', title='Most Commonly Used Tools by Top Utilizers')
+                        plt.ylabel('Number of Top Users Using Tool')
+                        plt.xticks(rotation=45, ha='right')
+                        plt.tight_layout()
+                        charts['top_utilizer_tools'] = os.path.join(output_folder, 'top_utilizer_tools.png')
+                        plt.savefig(charts['top_utilizer_tools'], dpi=150, bbox_inches='tight')
+                        plt.close()
+            
+            # Average Engagement Score Over Time
+            if not matched_df.empty and 'Engagement Score' in utilized_df.columns:
+                plot_data = pd.merge(
+                    matched_df,
+                    utilized_df[['Email', 'Engagement Score']],
+                    left_on='User Principal Name',
+                    right_on='Email',
+                    how='left'
+                )
+                if not plot_data.empty and 'Engagement Score' in plot_data.columns:
+                    trend_data = plot_data.groupby(pd.to_datetime(plot_data['Report Refresh Date']))['Engagement Score'].mean()
+                    
+                    if not trend_data.empty:
+                        plt.figure(figsize=(12, 6))
+                        trend_data.plot(kind='line', marker='o', linestyle='-', title='Average Engagement Score Over Time')
+                        plt.ylabel('Average Engagement Score')
+                        plt.xlabel('Report Date')
+                        plt.grid(True)
+                        plt.tight_layout()
+                        charts['avg_engagement_trend'] = os.path.join(output_folder, 'avg_engagement_trend.png')
+                        plt.savefig(charts['avg_engagement_trend'], dpi=150, bbox_inches='tight')
+                        plt.close()
+                        
+            self.log("Visualizations created.")
+            return charts
+        except Exception as e:
+            self.log(f"Error creating visualizations: {e}")
+            return {}
+
+    def create_excel_report(self, filename, top_utilizers_df, under_utilized_df, reallocation_df):
+        """Create Excel report with full formatting"""
+        try:
+            # Create visualizations
+            charts = self.create_visualizations(
+                self.utilized_metrics_df, 
+                top_utilizers_df, 
+                under_utilized_df, 
+                self.full_usage_data, 
+                self.output_folder_path
+            )
+            
             with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-                # Summary sheet
-                summary_data = {
-                    'Category': ['Top Utilizers', 'Under-Utilized', 'For Reallocation', 'Total'],
-                    'Count': [len(top_utilizers_df), len(under_utilized_df), len(reallocation_df), 
-                             len(top_utilizers_df) + len(under_utilized_df) + len(reallocation_df)]
-                }
-                summary_df = pd.DataFrame(summary_data)
-                summary_df.to_excel(writer, sheet_name='Summary', index=False)
+                # Define columns to include in sheets
+                cols = ['Email', 'Classification', 'Usage Consistency (%)', 'Overall Recency', 
+                       'Usage Complexity', 'Avg Tools / Report', 'Usage Trend', 'Engagement Score', 'Justification']
                 
-                # Individual sheets
-                if not top_utilizers_df.empty:
-                    top_utilizers_df.to_excel(writer, sheet_name='Top Utilizers', index=False)
-                if not under_utilized_df.empty:
-                    under_utilized_df.to_excel(writer, sheet_name='Under-Utilized', index=False)
-                if not reallocation_df.empty:
-                    reallocation_df.to_excel(writer, sheet_name='For Reallocation', index=False)
+                # Create leaderboard data combining all classifications
+                leaderboard_data = pd.concat([top_utilizers_df, under_utilized_df, reallocation_df]).sort_values(by="Engagement Score", ascending=False)
+                
+                # Prepare sheets with proper formatting
+                sheets_to_process = {
+                    'Leaderboard': leaderboard_data,
+                    'Top Utilizers': top_utilizers_df,
+                    'Under-Utilized': under_utilized_df,
+                    'For Reallocation': reallocation_df
+                }
+                
+                # Process each sheet
+                for sheet_name, df in sheets_to_process.items():
+                    if not df.empty:
+                        df_to_write = df[cols].copy()
+                        # Add rank column
+                        df_to_write.insert(0, 'Rank', range(1, 1 + len(df_to_write)))
+                        df_to_write.to_excel(writer, sheet_name=sheet_name, index=False, float_format="%.2f")
+                        # Apply styling
+                        self.style_excel_sheet(writer.sheets[sheet_name], df_to_write)
+
+                # Create Summary & Visualizations sheet with embedded charts
+                summary_ws = writer.book.create_sheet('Summary & Visualizations')
+                try:
+                    from openpyxl.drawing.image import Image as OpenpyxlImage
+                    
+                    # Add summary statistics as text
+                    summary_ws['A1'] = 'Copilot License Evaluation Summary'
+                    summary_ws['A1'].font = Font(bold=True, size=16)
+                    summary_ws['A3'] = f'Total Users Analyzed: {len(self.utilized_metrics_df)}'
+                    summary_ws['A4'] = f'Top Utilizers: {len(top_utilizers_df)}'
+                    summary_ws['A5'] = f'Under-Utilized: {len(under_utilized_df)}'
+                    summary_ws['A6'] = f'For Reallocation: {len(reallocation_df)}'
+                    summary_ws['A7'] = f'Report Generated: {datetime.now().strftime("%B %d, %Y at %I:%M %p")}'
+                    
+                    # Embed charts if they exist
+                    if 'engagement_score_hist' in charts and os.path.exists(charts['engagement_score_hist']):
+                        img1 = OpenpyxlImage(charts['engagement_score_hist'])
+                        img1.width = 600
+                        img1.height = 360
+                        summary_ws.add_image(img1, 'A10')
+                    
+                    if 'top_utilizer_tools' in charts and os.path.exists(charts['top_utilizer_tools']):
+                        img2 = OpenpyxlImage(charts['top_utilizer_tools'])
+                        img2.width = 700
+                        img2.height = 420
+                        summary_ws.add_image(img2, 'A35')
+                    
+                    if 'avg_engagement_trend' in charts and os.path.exists(charts['avg_engagement_trend']):
+                        img3 = OpenpyxlImage(charts['avg_engagement_trend'])
+                        img3.width = 700
+                        img3.height = 360
+                        summary_ws.add_image(img3, 'L10')
+                        
+                except Exception as e:
+                    self.log(f"Error adding images to Excel: {e}")
                     
             self.log(f"Excel report created: {filename}")
             return True
