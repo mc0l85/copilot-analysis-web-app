@@ -475,84 +475,150 @@ class CopilotAnalyzer:
             return False
             
     def create_leaderboard_html(self, filename):
-        """Create HTML leaderboard"""
+        """Create HTML leaderboard with original Haleon theme styling"""
         try:
             if self.utilized_metrics_df is None or self.utilized_metrics_df.empty:
+                self.log("No data available to generate leaderboard.")
                 return False
-                
-            # Sort by engagement score
-            sorted_df = self.utilized_metrics_df.sort_values('Engagement Score', ascending=False)
+
+            leaderboard_data = self.utilized_metrics_df.sort_values(by="Engagement Score", ascending=False)
             
-            html_content = f"""
+            html_head = """
             <!DOCTYPE html>
-            <html>
+            <html lang="en">
             <head>
-                <title>Copilot Usage Leaderboard</title>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Leaderboard - Haleon Theme</title>
+                <script src="https://cdn.tailwindcss.com"></script>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                 <style>
-                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                    .header {{ text-align: center; margin-bottom: 30px; }}
-                    .leaderboard {{ max-width: 1200px; margin: 0 auto; }}
-                    .user-card {{ 
-                        background: #f8f9fa; 
-                        border: 1px solid #dee2e6; 
-                        border-radius: 8px; 
-                        padding: 15px; 
-                        margin: 10px 0; 
+                    body { 
+                        font-family: 'Inter', sans-serif; 
+                        background-color: #f3f4f6;
+                    }
+                    .leaderboard-component {
+                        border-radius: 1rem; 
+                        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+                        overflow: hidden;
+                        border: 1px solid #e5e7eb;
+                    }
+                    .title-banner {
+                        background-color: #000000;
+                    }
+                    .table-container {
+                        background-color: #FFFFFF;
+                    }
+                    .table-header { 
+                        background-color: #2d3748;
+                    }
+                    .table-row:nth-child(even) { background-color: #f9fafb; }
+                    .table-row:hover { 
+                        background-color: #f0f0f0; 
+                    }
+                    .rank-badge { 
+                        font-weight: 700; 
+                        width: 2.5rem; 
+                        height: 2.5rem; 
                         display: flex; 
-                        justify-content: space-between; 
                         align-items: center; 
-                    }}
-                    .rank {{ font-size: 24px; font-weight: bold; color: #495057; }}
-                    .user-info {{ flex-grow: 1; margin-left: 20px; }}
-                    .email {{ font-size: 18px; font-weight: bold; color: #212529; }}
-                    .metrics {{ display: flex; gap: 20px; margin-top: 5px; }}
-                    .metric {{ font-size: 14px; color: #6c757d; }}
-                    .score {{ font-size: 20px; font-weight: bold; color: #28a745; }}
-                    .top-3 {{ border-left: 5px solid #ffd700; }}
-                    .top-10 {{ border-left: 5px solid #c0c0c0; }}
+                        justify-content: center; 
+                        border-radius: 50%;
+                        color: #000;
+                    }
+                    .progress-bar-container { 
+                        background-color: #e5e7eb; 
+                        border-radius: 9999px; 
+                        height: 8px; 
+                        width: 100%; 
+                    }
+                    .progress-bar { 
+                        background: #39FF14; 
+                        border-radius: 9999px; 
+                        height: 100%; 
+                    }
+                    .trend-icon.Increasing { color: #16a34a; }
+                    .trend-icon.Stable { color: #f59e0b; }
+                    .trend-icon.Decreasing { color: #ef4444; }
+                    .trend-icon.N\\/A { color: #6b7280; }
+                    .neon-green-text {
+                        color: #16a34a;
+                    }
+                    .user-email {
+                        font-weight: 600;
+                        color: #000000;
+                    }
                 </style>
             </head>
-            <body>
-                <div class="header">
-                    <h1>Copilot Usage Leaderboard</h1>
-                    <p>Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
-                </div>
-                <div class="leaderboard">
+            <body class="p-4 sm:p-6 lg:p-8">
+                <div class="leaderboard-component w-full max-w-5xl mx-auto">
+                    <div class="title-banner p-6 text-center">
+                        <h1 class="text-4xl font-bold text-white mb-2">Copilot Usage Leaderboard</h1>
+                        <p class="text-gray-300">Ranking by Engagement Score</p>
+                    </div>
+                    <div class="table-container">
+                        <div class="overflow-x-auto">
+                            <div class="min-w-full inline-block align-middle">
+                                <div class="table-header">
+                                    <div class="grid grid-cols-12 gap-4 px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-white">
+                                        <div class="col-span-1">Rank</div>
+                                        <div class="col-span-5">User</div>
+                                        <div class="col-span-2 text-center">Consistency</div>
+                                        <div class="col-span-2 text-center">Trend</div>
+                                        <div class="col-span-2 text-right">Engagement</div>
+                                    </div>
+                                </div>
+                                <div class="divide-y divide-gray-200">
             """
             
-            for i, (_, row) in enumerate(sorted_df.iterrows(), 1):
-                card_class = "user-card"
-                if i <= 3:
-                    card_class += " top-3"
-                elif i <= 10:
-                    card_class += " top-10"
+            html_rows = ""
+            max_score = leaderboard_data['Engagement Score'].max() if not leaderboard_data.empty else 3.0
+            
+            for rank, (_, user_row) in enumerate(leaderboard_data.iterrows(), 1):
+                try:
+                    if pd.isna(user_row['Email']) or not isinstance(user_row['Email'], str): 
+                        continue
+
+                    score_percentage = (user_row['Engagement Score'] / max_score) * 100 if max_score > 0 else 0
+                    hue = score_percentage * 1.2  # 0% -> 0 (red), 100% -> 120 (green)
+                    badge_color = f"hsl({hue}, 80%, 50%)"
                     
-                html_content += f"""
-                    <div class="{card_class}">
-                        <div class="rank">#{i}</div>
-                        <div class="user-info">
-                            <div class="email">{row['Email']}</div>
-                            <div class="metrics">
-                                <span class="metric">Consistency: {row['Usage Consistency (%)']:.1f}%</span>
-                                <span class="metric">Complexity: {row['Usage Complexity']}</span>
-                                <span class="metric">Avg Tools: {row['Avg Tools / Report']:.1f}</span>
-                                <span class="metric">Trend: {row['Usage Trend']}</span>
+                    trend = user_row['Usage Trend']
+                    trend_icon_map = {
+                        'Increasing': 'fa-arrow-trend-up', 
+                        'Decreasing': 'fa-arrow-trend-down', 
+                        'Stable': 'fa-minus', 
+                        'N/A': 'fa-question'
+                    }
+                    trend_icon = f"fa-solid {trend_icon_map.get(trend, 'fa-minus')}"
+                    
+                    html_rows += f"""
+                                    <div class="grid grid-cols-12 gap-4 px-6 py-3 items-center table-row text-gray-800">
+                                        <div class="col-span-1"><div class="rank-badge" style="background-color: {badge_color};"><span>{rank}</span></div></div>
+                                        <div class="col-span-5"><div class="user-email">{user_row['Email']}</div></div>
+                                        <div class="col-span-2 text-center"><div class="text-sm font-semibold neon-green-text">{user_row['Usage Consistency (%)']:.1f}%</div><div class="progress-bar-container mt-1"><div class="progress-bar" style="width: {user_row['Usage Consistency (%)']}%"></div></div></div>
+                                        <div class="col-span-2 text-center"><i class="trend-icon {trend} {trend_icon} fa-lg"></i></div>
+                                        <div class="col-span-2 text-right"><div class="text-sm font-bold neon-green-text">{user_row['Engagement Score']:.2f}</div></div>
+                                    </div>
+                    """
+                except Exception as e:
+                    self.log(f"Error processing leaderboard row for {user_row.get('Email', 'N/A')}: {e}")
+            
+            html_foot = """
+                                </div>
                             </div>
                         </div>
-                        <div class="score">{row['Engagement Score']:.2f}</div>
                     </div>
-                """
-                
-            html_content += """
                 </div>
             </body>
             </html>
             """
             
+            full_html = html_head + html_rows + html_foot
             with open(filename, 'w', encoding='utf-8') as f:
-                f.write(html_content)
-                
-            self.log(f"HTML leaderboard created: {filename}")
+                f.write(full_html)
+            self.log(f"HTML Leaderboard created: {filename}")
             return True
         except Exception as e:
             self.log(f"Error creating HTML leaderboard: {e}")
