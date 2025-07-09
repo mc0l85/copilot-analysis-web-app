@@ -8,6 +8,7 @@ import { FileUpload } from '@/components/file-upload'
 import { FilterPanel } from '@/components/filter-panel'
 import { AnalysisResults } from '@/components/analysis-results'
 import { ProcessingStatus } from '@/components/processing-status'
+import { DeepDiveAnalysis } from '@/components/deep-dive-analysis'
 import { Button } from '@/components/ui/button'
 import { BarChart3, Users, TrendingUp, FileSpreadsheet, Trophy } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -405,13 +406,7 @@ export function CopilotAnalysisApp() {
                   </TabsContent>
                   
                   <TabsContent value="deep-dive" className="mt-6">
-                    <div className="text-center py-8">
-                      <TrendingUp className="h-12 w-12 mx-auto mb-4 text-primary" />
-                      <h3 className="text-lg font-semibold mb-2">Deep Dive Analysis</h3>
-                      <p className="text-muted-foreground">
-                        Detailed user-specific analysis coming soon
-                      </p>
-                    </div>
+                    <DeepDiveAnalysis sessionId={analysisState.sessionId} />
                   </TabsContent>
                 </Tabs>
               )}
