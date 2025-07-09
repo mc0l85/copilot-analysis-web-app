@@ -1,0 +1,77 @@
+➤ YN0000: · Yarn 4.9.2
+➤ YN0000: ┌ Resolution step
+➤ YN0085: │ + @types/uuid@npm:10.0.0, class-variance-authority@npm:0.7.1, uuid@npm:11.1.0
+➤ YN0085: │ - class-variance-authority@npm:0.7.0, clsx@npm:2.0.0
+➤ YN0000: └ Completed in 0s 333ms
+➤ YN0000: ┌ Post-resolution validation
+➤ YN0060: │ @typescript-eslint/parser is listed by your project with version 7.0.0 (p6cb6c), which doesn't satisfy what @typescript-eslint/eslint-plugin requests (^6.0.0-alpha).
+➤ YN0060: │ eslint is listed by your project with version 9.24.0 (pe6e00), which doesn't satisfy what @typescript-eslint/eslint-plugin and other dependencies request (^8.57.0).
+➤ YN0002: │ app@workspace:. doesn't provide prettier (pd88b5), requested by eslint-plugin-prettier.
+➤ YN0086: │ Some peer dependencies are incorrectly met by your project; run yarn explain peer-requirements <hash> for details, where <hash> is the six-letter p-prefixed code.
+➤ YN0086: │ Some peer dependencies are incorrectly met by dependencies; run yarn explain peer-requirements for details.
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Fetch step
+➤ YN0000: └ Completed in 3s 82ms
+➤ YN0000: ┌ Link step
+➤ YN0000: └ Completed in 0s 705ms
+➤ YN0000: · Done with warnings in 4s 294ms
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.7.0) to ./node_modules/.prisma/client in 64ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Curious about the SQL queries Prisma ORM generates? Optimize helps you enhance your visibility: https://pris.ly/tip-2-optimize
+
+Starting server...
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1664ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.9s (1805 modules)
+ ✓ Compiled in 553ms (908 modules)
+ GET / 200 in 44ms
+ GET / 200 in 26ms
+ GET / 200 in 34ms
+ GET / 200 in 28ms
+ GET / 200 in 27ms
+ GET / 200 in 29ms
+ ✓ Compiled /api/test-results in 298ms (928 modules)
+ POST /api/test-results 200 in 400ms
+ POST /api/test-results 200 in 402ms
+ GET / 200 in 70ms
+ POST /api/test-results 200 in 19ms
+ POST /api/test-results 200 in 18ms
+ ✓ Compiled /api/analyze in 345ms (955 modules)
+ POST /api/analyze 200 in 7036ms
+ ✓ Compiled /api/deep-dive in 73ms (84 modules)
+Deep dive API called with sessionId: 86d85954-1e4b-499d-9c1b-f7e8f69e27b2
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=86d85954-1e4b-499d-9c1b-f7e8f69e27b2 404 in 121ms
+Deep dive API called with sessionId: 86d85954-1e4b-499d-9c1b-f7e8f69e27b2
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=86d85954-1e4b-499d-9c1b-f7e8f69e27b2 404 in 14ms
+ ✓ Compiled /api/download/[type] in 67ms (86 modules)
+No results in memory, searching file system...
+ GET /api/download/leaderboard?sessionId=86d85954-1e4b-499d-9c1b-f7e8f69e27b2 200 in 366ms
+No results in memory, searching file system...
+ GET /api/download/excel?sessionId=86d85954-1e4b-499d-9c1b-f7e8f69e27b2 200 in 43ms
+ ✓ Compiled / in 257ms (897 modules)
+ GET / 200 in 419ms
+ GET / 200 in 26ms
+ ✓ Compiled /api/test-results in 136ms (928 modules)
+ POST /api/test-results 200 in 199ms
+ POST /api/test-results 200 in 209ms
+ GET / 200 in 78ms
+ GET / 200 in 25ms
+ POST /api/test-results 200 in 16ms
+ POST /api/test-results 200 in 16ms
+[?25h

@@ -1,1 +1,1 @@
-{"/_not-found/page":"/_not-found","/api/debug/route":"/api/debug","/api/download/[type]/route":"/api/download/[type]","/api/deep-dive/route":"/api/deep-dive","/api/analyze/route":"/api/analyze","/page":"/","/api/test-results/route":"/api/test-results"}
+{"/_not-found/page":"/_not-found","/api/test-results/route":"/api/test-results","/api/analyze/route":"/api/analyze","/api/debug/route":"/api/debug","/api/deep-dive/route":"/api/deep-dive","/page":"/","/api/download/[type]/route":"/api/download/[type]"}
