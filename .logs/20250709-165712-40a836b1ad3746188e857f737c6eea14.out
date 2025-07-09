@@ -1,0 +1,24 @@
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1368ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1619ms (519 modules)
+ GET /api/auth/csrf 404 in 2030ms
+ ✓ Compiled in 386ms (267 modules)
+ ✓ Compiled / in 425ms (604 modules)
+ GET / 200 in 533ms
+ ✓ Compiled /api/download/[type] in 157ms (335 modules)
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 500ms
+ HEAD /api/download/excel 200 in 469ms
+ GET / 200 in 75ms
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 31ms
+ HEAD /api/download/excel 200 in 34ms
+[?25h

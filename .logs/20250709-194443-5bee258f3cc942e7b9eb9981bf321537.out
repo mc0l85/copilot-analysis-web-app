@@ -1,0 +1,109 @@
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1558ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3s (1805 modules)
+ GET / 200 in 3420ms
+ ✓ Compiled in 554ms (908 modules)
+ GET / 200 in 31ms
+ ✓ Compiled /api/test-results in 312ms (928 modules)
+ POST /api/test-results 200 in 405ms
+ POST /api/test-results 200 in 411ms
+ ✓ Compiled /api/analyze in 164ms (955 modules)
+ POST /api/analyze 200 in 1809ms
+ ✓ Compiled /api/deep-dive in 198ms (957 modules)
+Deep dive API called with sessionId: 9ac3ff39-fb76-45ed-add0-e3709912f386
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=9ac3ff39-fb76-45ed-add0-e3709912f386 404 in 236ms
+Deep dive API called with sessionId: 9ac3ff39-fb76-45ed-add0-e3709912f386
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=9ac3ff39-fb76-45ed-add0-e3709912f386 404 in 13ms
+Deep dive API called with sessionId: test-session-123
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+Creating test results for test session
+Returning 150 users
+ GET /api/deep-dive?sessionId=test-session-123 200 in 17ms
+Deep dive API called with sessionId: test-session-123
+Results found: true
+Returning 150 users
+ GET /api/deep-dive?sessionId=test-session-123 200 in 15ms
+ GET / 200 in 69ms
+ GET / 200 in 25ms
+ POST /api/test-results 200 in 20ms
+ POST /api/test-results 200 in 26ms
+Deep dive API called with sessionId: 9ac3ff39-fb76-45ed-add0-e3709912f386
+Results found: false
+Session not found in analysisResults
+Available sessions: [ 'test-session-123' ]
+ GET /api/deep-dive?sessionId=9ac3ff39-fb76-45ed-add0-e3709912f386 404 in 16ms
+ GET / 200 in 27ms
+ GET / 200 in 29ms
+ POST /api/test-results 200 in 22ms
+ POST /api/test-results 200 in 28ms
+ ✓ Compiled /api/debug in 254ms (959 modules)
+ GET /api/debug 200 in 293ms
+ GET / 200 in 48ms
+ GET / 200 in 26ms
+ POST /api/test-results 200 in 18ms
+ POST /api/test-results 200 in 17ms
+ POST /api/analyze 200 in 1613ms
+ GET / 200 in 26ms
+ GET / 200 in 23ms
+ POST /api/test-results 200 in 18ms
+ POST /api/test-results 200 in 22ms
+ POST /api/analyze 200 in 1615ms
+ GET /api/debug 200 in 13ms
+ GET / 200 in 27ms
+ GET / 200 in 24ms
+ POST /api/test-results 200 in 20ms
+ POST /api/test-results 200 in 32ms
+Deep dive API called with sessionId: d870d25c-637e-49c1-a046-349d7b72be82
+Results found: true
+Returning 19 users
+ GET /api/deep-dive?sessionId=d870d25c-637e-49c1-a046-349d7b72be82 200 in 16ms
+ GET / 200 in 24ms
+ GET / 200 in 23ms
+ POST /api/test-results 200 in 17ms
+ POST /api/test-results 200 in 25ms
+Deep dive API called with sessionId: d870d25c-637e-49c1-a046-349d7b72be82
+Results found: true
+Returning 19 users
+ GET /api/deep-dive?sessionId=d870d25c-637e-49c1-a046-349d7b72be82 200 in 14ms
+ GET / 200 in 28ms
+ GET / 200 in 50ms
+ POST /api/test-results 200 in 22ms
+ POST /api/test-results 200 in 21ms
+ GET / 200 in 33ms
+ GET / 200 in 26ms
+ POST /api/test-results 200 in 18ms
+ POST /api/test-results 200 in 24ms
+ GET / 200 in 28ms
+ POST /api/test-results 200 in 16ms
+ POST /api/test-results 200 in 15ms
+ POST /api/analyze 200 in 96133ms
+Deep dive API called with sessionId: ff4f31dc-6762-45a0-be32-818caca3dcd5
+Results found: true
+Returning 4478 users
+ GET /api/deep-dive?sessionId=ff4f31dc-6762-45a0-be32-818caca3dcd5 200 in 53ms
+Deep dive API called with sessionId: ff4f31dc-6762-45a0-be32-818caca3dcd5
+Results found: true
+Returning 4478 users
+ GET /api/deep-dive?sessionId=ff4f31dc-6762-45a0-be32-818caca3dcd5 200 in 46ms
+ GET / 200 in 32ms
+ GET / 200 in 24ms
+ POST /api/test-results 200 in 24ms
+ POST /api/test-results 200 in 23ms
+ GET / 200 in 28ms
+ GET / 200 in 23ms
+ POST /api/test-results 200 in 19ms
+ POST /api/test-results 200 in 25ms

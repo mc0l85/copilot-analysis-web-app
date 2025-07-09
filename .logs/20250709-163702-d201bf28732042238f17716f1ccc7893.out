@@ -1,0 +1,65 @@
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1416ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.6s (620 modules)
+ GET / 200 in 2975ms
+ ✓ Compiled in 392ms (312 modules)
+ GET / 200 in 46ms
+ GET / 200 in 29ms
+ GET / 200 in 25ms
+ GET / 200 in 27ms
+ ✓ Compiled /api/analyze in 308ms (82 modules)
+ POST /api/analyze 200 in 9114ms
+ ✓ Compiled /api/download/[type] in 75ms (84 modules)
+ GET /api/download/excel?sessionId=d49ca207-77b4-40da-9b3c-4cbaaadf6183 404 in 346ms
+ GET /api/download/html?sessionId=d49ca207-77b4-40da-9b3c-4cbaaadf6183 404 in 27ms
+ GET /api/download/leaderboard?sessionId=d49ca207-77b4-40da-9b3c-4cbaaadf6183 404 in 21ms
+ HEAD /api/download/excel 404 in 23ms
+ GET /api/download/excel 404 in 28ms
+ GET /api/analyze 405 in 14ms
+ ✓ Compiled / in 199ms (359 modules)
+ GET / 200 in 335ms
+ ✓ Compiled in 418ms (671 modules)
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 38ms
+No results in memory, searching file system...
+ HEAD /api/download/html 200 in 26ms
+ ✓ Compiled in 94ms (334 modules)
+ ✓ Compiled in 602ms (646 modules)
+ ✓ Compiled /api/test-results in 198ms (336 modules)
+ POST /api/test-results 200 in 232ms
+ ✓ Compiled in 481ms (648 modules)
+ ✓ Compiled in 384ms (648 modules)
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 404 in 39ms
+ HEAD /api/download/excel 404 in 40ms
+ GET / 200 in 73ms
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 404 in 28ms
+ HEAD /api/download/excel 404 in 26ms
+No results in memory, searching file system...
+ HEAD /api/download/excel 404 in 25ms
+No results in memory, searching file system...
+ GET /api/download/excel 404 in 23ms
+ POST /api/test-results 200 in 15ms
+ HEAD /api/download/excel 404 in 25ms
+ HEAD /api/download/excel?sessionId=test-session-123 404 in 23ms
+ POST /api/test-results 200 in 17ms
+ HEAD /api/download/excel 200 in 24ms
+ HEAD /api/download/html 200 in 20ms
+ HEAD /api/download/leaderboard 200 in 23ms
+ GET / 200 in 30ms
+ HEAD /api/download/excel 200 in 26ms
+ HEAD /api/download/excel 200 in 28ms
+ GET /api/download/excel 200 in 23ms
+ GET /api/download/html 200 in 21ms
+ GET /api/download/leaderboard 200 in 23ms
+ GET /api/download/leaderboard 200 in 23ms
+[?25h

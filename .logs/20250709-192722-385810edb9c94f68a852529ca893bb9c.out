@@ -1,0 +1,54 @@
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1655ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.1s (1805 modules)
+ GET / 200 in 3561ms
+ ✓ Compiled in 561ms (908 modules)
+ GET / 200 in 37ms
+ ✓ Compiled /api/download/[type] in 318ms (930 modules)
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 688ms
+ HEAD /api/download/excel 200 in 679ms
+ GET / 200 in 76ms
+ GET / 200 in 27ms
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 31ms
+ HEAD /api/download/excel 200 in 34ms
+ GET / 200 in 33ms
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 36ms
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 17ms
+ ✓ Compiled /api/deep-dive in 222ms (57 modules)
+Deep dive API called with sessionId: test-session-123
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+Creating test results for test session
+Returning 150 users
+ GET /api/deep-dive?sessionId=test-session-123 200 in 271ms
+Deep dive API called with sessionId: test-session-123
+Results found: true
+Returning 150 users
+ GET /api/deep-dive?sessionId=test-session-123 200 in 17ms
+ ✓ Compiled /api/analyze in 154ms (82 modules)
+ POST /api/analyze 200 in 10040ms
+ ✓ Compiled /api/deep-dive in 45ms (84 modules)
+Deep dive API called with sessionId: 11f48e50-ccc3-4923-8357-a362698bec68
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=11f48e50-ccc3-4923-8357-a362698bec68 404 in 73ms
+Deep dive API called with sessionId: 11f48e50-ccc3-4923-8357-a362698bec68
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=11f48e50-ccc3-4923-8357-a362698bec68 404 in 14ms
+[?25h

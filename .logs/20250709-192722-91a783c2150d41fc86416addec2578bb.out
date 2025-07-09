@@ -1,0 +1,285 @@
+sending incremental file list
+components.json
+next-env.d.ts
+next.config.js
+package.json
+postcss.config.js
+tailwind.config.ts
+tsconfig.json
+tsconfig.tsbuildinfo
+app/
+app/globals.css
+app/layout.tsx
+app/page.tsx
+app/api/
+app/api/analyze/
+app/api/analyze/route.ts
+app/api/debug/
+app/api/debug/route.ts
+app/api/deep-dive/
+app/api/deep-dive/route.ts
+app/api/download/
+app/api/download/[type]/
+app/api/download/[type]/route.ts
+app/api/test-results/
+app/api/test-results/route.ts
+components/
+components/analysis-results.tsx
+components/copilot-analysis-app.tsx
+components/deep-dive-analysis.tsx
+components/file-upload.tsx
+components/filter-panel.tsx
+components/processing-status.tsx
+components/theme-provider.tsx
+components/ui/
+components/ui/accordion.tsx
+components/ui/alert-dialog.tsx
+components/ui/alert.tsx
+components/ui/aspect-ratio.tsx
+components/ui/avatar.tsx
+components/ui/badge.tsx
+components/ui/breadcrumb.tsx
+components/ui/button.tsx
+components/ui/calendar.tsx
+components/ui/card.tsx
+components/ui/carousel.tsx
+components/ui/checkbox.tsx
+components/ui/collapsible.tsx
+components/ui/command.tsx
+components/ui/context-menu.tsx
+components/ui/date-range-picker.tsx
+components/ui/dialog.tsx
+components/ui/drawer.tsx
+components/ui/dropdown-menu.tsx
+components/ui/form.tsx
+components/ui/hover-card.tsx
+components/ui/input-otp.tsx
+components/ui/input.tsx
+components/ui/label.tsx
+components/ui/menubar.tsx
+components/ui/navigation-menu.tsx
+components/ui/pagination.tsx
+components/ui/popover.tsx
+components/ui/progress.tsx
+components/ui/radio-group.tsx
+components/ui/resizable.tsx
+components/ui/scroll-area.tsx
+components/ui/select.tsx
+components/ui/separator.tsx
+components/ui/sheet.tsx
+components/ui/skeleton.tsx
+components/ui/slider.tsx
+components/ui/sonner.tsx
+components/ui/switch.tsx
+components/ui/table.tsx
+components/ui/tabs.tsx
+components/ui/task-card.tsx
+components/ui/textarea.tsx
+components/ui/toast.tsx
+components/ui/toaster.tsx
+components/ui/toggle-group.tsx
+components/ui/toggle.tsx
+components/ui/tooltip.tsx
+components/ui/use-toast.ts
+hooks/
+hooks/use-toast.ts
+lib/
+lib/analysis-store.ts
+lib/db.ts
+lib/types.ts
+lib/utils.ts
+prisma/
+prisma/schema.prisma
+python_backend/
+python_backend/copilot_analyzer.py
+python_backend/original_script.py
+python_backend/requirements.txt
+python_backend/__pycache__/
+python_backend/__pycache__/copilot_analyzer.cpython-311.pyc
+temp/
+temp/65d8fd97-5f35-4523-a099-f2148f3b85e1/
+temp/65d8fd97-5f35-4523-a099-f2148f3b85e1/output/
+temp/65d8fd97-5f35-4523-a099-f2148f3b85e1/output/avg_engagement_trend.png
+temp/65d8fd97-5f35-4523-a099-f2148f3b85e1/output/engagement_score_hist.png
+temp/65d8fd97-5f35-4523-a099-f2148f3b85e1/output/top_utilizer_tools.png
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/target_users.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_0.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_1.xlsx
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_10.xlsx
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_11.xlsx
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_12.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_13.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_14.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_15.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_16.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_17.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_18.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_19.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_2.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_20.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_21.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_22.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_23.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_24.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_25.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_26.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_27.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_3.xlsx
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_4.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_5.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_6.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_7.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_8.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/usage_report_9.csv
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/output/
+temp/6d0f9cda-259a-4f36-8c72-e7fbf5555f04/output/09-July-2025_Copilot_License_Evaluation.xlsx
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/target_users.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_0.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_1.xlsx
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_10.xlsx
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_11.xlsx
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_12.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_13.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_14.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_15.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_16.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_17.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_18.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_19.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_2.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_20.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_21.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_22.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_23.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_24.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_25.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_26.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_27.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_3.xlsx
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_4.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_5.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_6.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_7.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_8.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/usage_report_9.csv
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/output/
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/output/09-July-2025_Copilot_License_Evaluation.xlsx
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/output/avg_engagement_trend.png
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/output/engagement_score_hist.png
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/output/leaderboard.html
+temp/855cb2d2-ab61-42dd-ad32-c7031212d12a/output/top_utilizer_tools.png
+temp/d49ca207-77b4-40da-9b3c-4cbaaadf6183/
+temp/d49ca207-77b4-40da-9b3c-4cbaaadf6183/output/
+temp/d49ca207-77b4-40da-9b3c-4cbaaadf6183/output/09-July-2025_Copilot_License_Evaluation.xlsx
+temp/d49ca207-77b4-40da-9b3c-4cbaaadf6183/output/leaderboard.html
+temp/da716b19-daa1-4c44-9425-86621e45c31d/
+temp/da716b19-daa1-4c44-9425-86621e45c31d/target_users.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_0.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_1.xlsx
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_10.xlsx
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_11.xlsx
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_12.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_13.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_14.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_15.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_16.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_17.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_18.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_19.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_2.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_20.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_21.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_22.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_23.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_24.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_25.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_26.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_27.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_3.xlsx
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_4.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_5.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_6.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_7.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_8.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/usage_report_9.csv
+temp/da716b19-daa1-4c44-9425-86621e45c31d/output/
+temp/da716b19-daa1-4c44-9425-86621e45c31d/output/09-July-2025_Copilot_License_Evaluation.xlsx
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/target_users.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_0.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_1.xlsx
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_10.xlsx
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_11.xlsx
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_12.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_13.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_14.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_15.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_16.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_17.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_18.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_19.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_2.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_20.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_21.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_22.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_23.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_24.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_25.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_26.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_27.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_3.xlsx
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_4.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_5.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_6.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_7.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_8.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/usage_report_9.csv
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/output/
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/output/09-July-2025_Copilot_License_Evaluation.xlsx
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/output/avg_engagement_trend.png
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/output/engagement_score_hist.png
+temp/ef81263d-1ba5-4c4f-911f-21d354a49807/output/top_utilizer_tools.png
+
+sent 133,589,626 bytes  received 4,254 bytes  89,062,586.67 bytes/sec
+total size is 133,541,846  speedup is 1.00
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+  ▲ Next.js 14.2.28
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/8) ...
+   Generating static pages (2/8) 
+   Generating static pages (4/8) 
+   Generating static pages (6/8) 
+ ✓ Generating static pages (8/8)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    128 kB          225 kB
+├ ○ /_not-found                          876 B          88.3 kB
+├ ƒ /api/analyze                         0 B                0 B
+├ ○ /api/debug                           0 B                0 B
+├ ƒ /api/deep-dive                       0 B                0 B
+├ ƒ /api/download/[type]                 0 B                0 B
+└ ƒ /api/test-results                    0 B                0 B
++ First Load JS shared by all            87.4 kB
+  ├ chunks/117-63bb2e70a67f0eeb.js       31.8 kB
+  ├ chunks/fd9d1056-dfca9d5570f12b5a.js  53.6 kB
+  └ other shared chunks (total)          2 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

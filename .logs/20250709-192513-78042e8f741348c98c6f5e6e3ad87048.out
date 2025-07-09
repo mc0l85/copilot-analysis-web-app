@@ -1,0 +1,67 @@
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1591ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1919ms (519 modules)
+ GET /api/auth/csrf 404 in 2124ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1914ms (1796 modules)
+ GET / 200 in 1836ms
+ ✓ Compiled /api/download/[type] in 252ms (931 modules)
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 657ms
+ HEAD /api/download/excel 200 in 654ms
+ ✓ Compiled /api/debug in 272ms (933 modules)
+ GET /api/debug 200 in 309ms
+ ✓ Compiled /api/test-results in 198ms (935 modules)
+ POST /api/test-results 200 in 245ms
+ GET /api/debug 200 in 17ms
+ ✓ Compiled /api/deep-dive in 200ms (937 modules)
+Deep dive API called with sessionId: test-session-123
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=test-session-123 404 in 236ms
+Deep dive API called with sessionId: test-session-123
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=test-session-123 404 in 29ms
+Deep dive API called with sessionId: test-session-123
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=test-session-123 404 in 16ms
+Deep dive API called with sessionId: test-session-123
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+ GET /api/deep-dive?sessionId=test-session-123 404 in 16ms
+ ✓ Compiled in 606ms (969 modules)
+Deep dive API called with sessionId: test-session-123
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+Creating test results for test session
+Returning 150 users
+ GET /api/deep-dive?sessionId=test-session-123 200 in 48ms
+ ✓ Compiled / in 234ms (930 modules)
+ GET / 200 in 431ms
+ ✓ Compiled /api/download/[type] in 207ms (934 modules)
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 300ms
+ HEAD /api/download/excel 200 in 300ms
+Deep dive API called with sessionId: test-session-123
+Results found: false
+Session not found in analysisResults
+Available sessions: []
+Creating test results for test session
+Returning 150 users
+ GET /api/deep-dive?sessionId=test-session-123 200 in 25ms
+[?25h

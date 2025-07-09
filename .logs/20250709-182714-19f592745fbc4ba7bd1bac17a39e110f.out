@@ -1,0 +1,42 @@
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1441ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1976ms (613 modules)
+ GET / 200 in 2332ms
+ ✓ Compiled in 401ms (312 modules)
+ GET / 200 in 34ms
+ ✓ Compiled /api/download/[type] in 175ms (334 modules)
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 523ms
+ HEAD /api/download/excel 200 in 518ms
+ GET / 200 in 67ms
+ GET / 200 in 26ms
+No results in memory, searching file system...
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 28ms
+ HEAD /api/download/excel 200 in 28ms
+ GET / 200 in 30ms
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 29ms
+No results in memory, searching file system...
+ HEAD /api/download/excel 200 in 18ms
+ ✓ Compiled /api/analyze in 148ms (82 modules)
+ POST /api/analyze 200 in 8425ms
+ ✓ Compiled /api/download/[type] in 50ms (84 modules)
+No results in memory, searching file system...
+ GET /api/download/leaderboard?sessionId=65d8fd97-5f35-4523-a099-f2148f3b85e1 200 in 98ms
+ ✓ Compiled in 670ms (312 modules)
+ ✓ Compiled in 444ms (312 modules)
+ ✓ Compiled in 522ms (312 modules)
+ ✓ Compiled in 1571ms (908 modules)
+ ✓ Compiled in 441ms (908 modules)
+ ✓ Compiled in 314ms (908 modules)
+ ✓ Compiled in 483ms (908 modules)
+ ✓ Compiled in 341ms (908 modules)
+[?25h
