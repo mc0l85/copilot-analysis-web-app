@@ -85,13 +85,13 @@ export function CopilotAnalysisApp() {
               excel: 'existing',
               html: 'existing'
             },
-            sessionId: 'existing-session'
+            sessionId: 'test-session-123'
           }
           
           setAnalysisState(prev => ({
             ...prev,
             results: mockResults,
-            sessionId: 'existing-session'
+            sessionId: 'test-session-123'
           }))
           
           toast({
@@ -100,8 +100,25 @@ export function CopilotAnalysisApp() {
           })
         }
       } catch (error) {
-        // No existing results, that's fine
-        console.log('No existing results found')
+        // No existing results, that's fine - try creating test results
+        try {
+          const testResponse = await fetch('/api/test-results', { method: 'POST' })
+          if (testResponse.ok) {
+            const testResults = await testResponse.json()
+            setAnalysisState(prev => ({
+              ...prev,
+              results: testResults,
+              sessionId: testResults.sessionId
+            }))
+            
+            toast({
+              title: "Test results loaded",
+              description: "Demo data has been loaded for testing."
+            })
+          }
+        } catch (testError) {
+          console.log('No test results available')
+        }
       }
     }
     

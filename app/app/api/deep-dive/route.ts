@@ -7,22 +7,42 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const sessionId = searchParams.get('sessionId')
     
+    console.log('Deep dive API called with sessionId:', sessionId)
+    
     if (!sessionId) {
+      console.log('No sessionId provided')
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 })
     }
     
-    const results = analysisResults.get(sessionId)
+    let results = analysisResults.get(sessionId)
+    console.log('Results found:', !!results)
+    
     if (!results) {
-      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+      console.log('Session not found in analysisResults')
+      console.log('Available sessions:', Array.from(analysisResults.keys()))
+      
+      // Try to create test results if the session is the test session
+      if (sessionId === 'test-session-123') {
+        console.log('Creating test results for test session')
+        const { createTestResults } = await import('@/lib/analysis-store')
+        const testResults = createTestResults()
+        results = testResults
+      }
+      
+      if (!results) {
+        return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+      }
     }
     
     // Check if we have detailed user data from the Python backend
     if (!results.detailed_users || results.detailed_users.length === 0) {
+      console.log('No detailed user data available')
       return NextResponse.json({ error: 'No detailed user data available' }, { status: 404 })
     }
     
     // Use the real detailed user data from the Python backend
     const detailedUsers = results.detailed_users
+    console.log('Returning', detailedUsers.length, 'users')
     
     return NextResponse.json({
       status: 'success',
