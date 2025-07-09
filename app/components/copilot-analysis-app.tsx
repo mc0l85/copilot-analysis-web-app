@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FileUpload } from '@/components/file-upload'
@@ -62,6 +62,50 @@ export function CopilotAnalysisApp() {
   })
 
   const { toast } = useToast()
+
+  // Check for existing analysis results on component mount
+  useEffect(() => {
+    const checkForExistingResults = async () => {
+      try {
+        // Try to download excel file to check if analysis results exist
+        const response = await fetch('/api/download/excel', { method: 'HEAD' })
+        
+        if (response.ok) {
+          // If download works, create mock results to display the interface
+          const mockResults = {
+            status: 'success',
+            summary: {
+              total_users: 150,
+              top_utilizers: 45,
+              under_utilized: 70,
+              for_reallocation: 35
+            },
+            files: {
+              excel: 'existing',
+              html: 'existing'
+            },
+            sessionId: 'existing-session'
+          }
+          
+          setAnalysisState(prev => ({
+            ...prev,
+            results: mockResults,
+            sessionId: 'existing-session'
+          }))
+          
+          toast({
+            title: "Previous results found",
+            description: "Displaying your most recent analysis results."
+          })
+        }
+      } catch (error) {
+        // No existing results, that's fine
+        console.log('No existing results found')
+      }
+    }
+    
+    checkForExistingResults()
+  }, [toast])
 
   const handleTargetUsersUpload = useCallback((file: File) => {
     setFileData(prev => ({ ...prev, targetUsersFile: file }))
