@@ -692,6 +692,81 @@ def main():
         analyzer.create_excel_report(excel_filename, top_utilizers_df, under_utilized_df, reallocation_df)
         analyzer.create_leaderboard_html(html_filename)
         
+        # Prepare detailed user data for web interface
+        detailed_users = []
+        for _, row in analyzer.utilized_metrics_df.iterrows():
+            user_data = {
+                'email': row['Email'],
+                'engagementScore': float(row['Engagement Score']),
+                'consistencyPercent': float(row['Usage Consistency (%)']),
+                'complexityScore': float(row['Usage Complexity']),
+                'avgToolsPerReport': float(row['Avg Tools / Report']),
+                'trend': row['Usage Trend'],
+                'appearances': int(row['Appearances']),
+                'firstAppearance': row['First Appearance'].isoformat() if pd.notna(row['First Appearance']) else None,
+                'lastActivity': row['Overall Recency'].isoformat() if pd.notna(row['Overall Recency']) else None,
+                'classification': None,  # Will be set below
+                'justification': None,  # Will be set below
+                'riskLevel': 'Low'  # Default, will be updated below
+            }
+            detailed_users.append(user_data)
+        
+        # Add classification and justification data
+        for _, row in top_utilizers_df.iterrows():
+            user_data = next((u for u in detailed_users if u['email'] == row['Email']), None)
+            if user_data:
+                user_data['classification'] = 'Top Utilizer'
+                user_data['justification'] = row['Justification']
+                user_data['riskLevel'] = 'Low'
+        
+        for _, row in under_utilized_df.iterrows():
+            user_data = next((u for u in detailed_users if u['email'] == row['Email']), None)
+            if user_data:
+                user_data['classification'] = 'Under-Utilized'
+                user_data['justification'] = row['Justification']
+                user_data['riskLevel'] = 'Medium'
+        
+        for _, row in reallocation_df.iterrows():
+            user_data = next((u for u in detailed_users if u['email'] == row['Email']), None)
+            if user_data:
+                user_data['classification'] = 'For Reallocation'
+                user_data['justification'] = row['Justification']
+                user_data['riskLevel'] = 'High'
+        
+        # Generate tool usage data from usage reports
+        tool_usage_data = {}
+        if analyzer.full_usage_data is not None:
+            tool_cols = [col for col in analyzer.full_usage_data.columns if 'Last activity date of' in col]
+            for email in [u['email'] for u in detailed_users]:
+                user_usage = analyzer.full_usage_data[analyzer.full_usage_data['User Principal Name'] == email]
+                tools_used = []
+                for col in tool_cols:
+                    if user_usage[col].notna().any():
+                        tool_name = col.replace('Last activity date of ', '').replace(' (UTC)', '')
+                        tools_used.append(tool_name)
+                tool_usage_data[email] = tools_used
+        
+        # Add tool usage to detailed users
+        for user_data in detailed_users:
+            user_data['toolsUsed'] = tool_usage_data.get(user_data['email'], [])
+            
+            # Generate mock monthly activity data for visualization
+            user_data['monthlyActivity'] = []
+            months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            for month in months:
+                if user_data['classification'] == 'Top Utilizer':
+                    activity = {'month': month, 'toolsUsed': 3 + (hash(month + user_data['email']) % 3), 'complexity': 6 + (hash(month + user_data['email']) % 4)}
+                elif user_data['classification'] == 'Under-Utilized':
+                    activity = {'month': month, 'toolsUsed': (hash(month + user_data['email']) % 2), 'complexity': (hash(month + user_data['email']) % 3)}
+                else:  # For Reallocation
+                    activity = {'month': month, 'toolsUsed': 0, 'complexity': 0}
+                user_data['monthlyActivity'].append(activity)
+            
+            # Generate report dates
+            user_data['reportDates'] = []
+            for i in range(user_data['appearances']):
+                user_data['reportDates'].append(f"2024-{(i % 12) + 1:02d}-01T00:00:00.000Z")
+
         # Output results as JSON for web interface
         results = {
             'status': 'success',
@@ -704,7 +779,8 @@ def main():
             'files': {
                 'excel': excel_filename,
                 'html': html_filename
-            }
+            },
+            'detailed_users': detailed_users
         }
         
         print(json.dumps(results))

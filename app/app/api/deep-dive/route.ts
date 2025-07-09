@@ -1,9 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { analysisResults } from '@/lib/analysis-store'
-import { spawn } from 'child_process'
-import path from 'path'
-import fs from 'fs'
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,9 +16,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
     
-    // For now, generate mock detailed user data based on the summary
-    // In a real implementation, this would come from the Python backend
-    const detailedUsers = generateMockUserData(results.summary)
+    // Check if we have detailed user data from the Python backend
+    if (!results.detailed_users || results.detailed_users.length === 0) {
+      return NextResponse.json({ error: 'No detailed user data available' }, { status: 404 })
+    }
+    
+    // Use the real detailed user data from the Python backend
+    const detailedUsers = results.detailed_users
     
     return NextResponse.json({
       status: 'success',
@@ -37,93 +38,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateMockUserData(summary: any) {
-  const users = []
-  
-  // Generate Top Utilizers
-  for (let i = 0; i < summary.top_utilizers; i++) {
-    users.push({
-      email: `user${i + 1}@company.com`,
-      classification: 'Top Utilizer',
-      engagementScore: 2.5 + Math.random() * 0.5,
-      consistencyPercent: 75 + Math.random() * 25,
-      complexityScore: 8 + Math.random() * 4,
-      avgToolsPerReport: 3 + Math.random() * 2,
-      trend: ['Increasing', 'Stable'][Math.floor(Math.random() * 2)],
-      appearances: 8 + Math.floor(Math.random() * 4),
-      firstAppearance: new Date(2024, Math.floor(Math.random() * 6), 1).toISOString(),
-      lastActivity: new Date(2024, 6, Math.floor(Math.random() * 9) + 1).toISOString(),
-      justification: 'High Engagement',
-      toolsUsed: ['Copilot Chat', 'Code Completion', 'Documentation', 'Debug Assistant'],
-      reportDates: generateReportDates(8 + Math.floor(Math.random() * 4)),
-      monthlyActivity: generateMonthlyActivity('high'),
-      riskLevel: 'Low'
-    })
-  }
-  
-  // Generate Under-Utilized Users
-  for (let i = 0; i < summary.under_utilized; i++) {
-    users.push({
-      email: `under${i + 1}@company.com`,
-      classification: 'Under-Utilized',
-      engagementScore: 1.0 + Math.random() * 1.0,
-      consistencyPercent: 25 + Math.random() * 35,
-      complexityScore: 2 + Math.random() * 4,
-      avgToolsPerReport: 1 + Math.random() * 2,
-      trend: ['Decreasing', 'Stable'][Math.floor(Math.random() * 2)],
-      appearances: 2 + Math.floor(Math.random() * 4),
-      firstAppearance: new Date(2024, Math.floor(Math.random() * 6), 1).toISOString(),
-      lastActivity: new Date(2024, 4, Math.floor(Math.random() * 15) + 1).toISOString(),
-      justification: 'Low consistency (active in 3 of 12 months); Downward usage trend',
-      toolsUsed: ['Copilot Chat', 'Code Completion'],
-      reportDates: generateReportDates(2 + Math.floor(Math.random() * 4)),
-      monthlyActivity: generateMonthlyActivity('low'),
-      riskLevel: 'Medium'
-    })
-  }
-  
-  // Generate For Reallocation Users
-  for (let i = 0; i < summary.for_reallocation; i++) {
-    users.push({
-      email: `realloc${i + 1}@company.com`,
-      classification: 'For Reallocation',
-      engagementScore: Math.random() * 0.8,
-      consistencyPercent: Math.random() * 25,
-      complexityScore: Math.random() * 2,
-      avgToolsPerReport: Math.random() * 1,
-      trend: ['Decreasing', 'N/A'][Math.floor(Math.random() * 2)],
-      appearances: 1 + Math.floor(Math.random() * 2),
-      firstAppearance: new Date(2024, Math.floor(Math.random() * 6), 1).toISOString(),
-      lastActivity: new Date(2024, 1, Math.floor(Math.random() * 15) + 1).toISOString(),
-      justification: 'No activity in 90+ days; No tool usage recorded',
-      toolsUsed: [],
-      reportDates: generateReportDates(1 + Math.floor(Math.random() * 2)),
-      monthlyActivity: generateMonthlyActivity('none'),
-      riskLevel: 'High'
-    })
-  }
-  
-  return users.sort((a, b) => b.engagementScore - a.engagementScore)
-}
 
-function generateReportDates(count: number) {
-  const dates = []
-  for (let i = 0; i < count; i++) {
-    dates.push(new Date(2024, i, 1).toISOString())
-  }
-  return dates
-}
-
-function generateMonthlyActivity(level: 'high' | 'low' | 'none') {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  return months.map(month => ({
-    month,
-    toolsUsed: level === 'high' ? 3 + Math.random() * 3 : 
-                level === 'low' ? Math.random() * 2 : 0,
-    complexity: level === 'high' ? 6 + Math.random() * 4 : 
-                 level === 'low' ? Math.random() * 3 : 0
-  }))
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -140,8 +55,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
     
-    // Generate comparison data for selected users
-    const comparisonData = generateComparisonData(selectedUsers)
+    // Check if we have detailed user data
+    if (!results.detailed_users || results.detailed_users.length === 0) {
+      return NextResponse.json({ error: 'No detailed user data available' }, { status: 404 })
+    }
+    
+    // Generate comparison data for selected users using real data
+    const comparisonData = generateComparisonData(selectedUsers, results.detailed_users)
     
     return NextResponse.json({
       status: 'success',
@@ -156,20 +76,88 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateComparisonData(selectedUsers: string[]) {
-  return {
-    averageEngagement: selectedUsers.length > 0 ? 1.5 + Math.random() * 1.5 : 0,
-    totalToolsUsed: selectedUsers.length * (2 + Math.floor(Math.random() * 3)),
-    commonTools: ['Copilot Chat', 'Code Completion'],
-    trendAnalysis: {
-      increasing: Math.floor(selectedUsers.length * 0.3),
-      stable: Math.floor(selectedUsers.length * 0.5),
-      decreasing: Math.floor(selectedUsers.length * 0.2)
-    },
-    riskDistribution: {
-      low: Math.floor(selectedUsers.length * 0.4),
-      medium: Math.floor(selectedUsers.length * 0.4),
-      high: Math.floor(selectedUsers.length * 0.2)
+function generateComparisonData(selectedUsers: string[], allUsers: any[]) {
+  if (selectedUsers.length === 0) {
+    return {
+      averageEngagement: 0,
+      totalToolsUsed: 0,
+      commonTools: [],
+      trendAnalysis: {
+        increasing: 0,
+        stable: 0,
+        decreasing: 0
+      },
+      riskDistribution: {
+        low: 0,
+        medium: 0,
+        high: 0
+      }
     }
+  }
+  
+  // Filter to only selected users
+  const selectedUserData = allUsers.filter(user => selectedUsers.includes(user.email))
+  
+  // Calculate average engagement
+  const averageEngagement = selectedUserData.length > 0 
+    ? selectedUserData.reduce((sum, user) => sum + (user.engagementScore || 0), 0) / selectedUserData.length
+    : 0
+  
+  // Calculate total unique tools used
+  const allToolsUsed = new Set<string>()
+  selectedUserData.forEach(user => {
+    if (user.toolsUsed && Array.isArray(user.toolsUsed)) {
+      user.toolsUsed.forEach((tool: string) => allToolsUsed.add(tool))
+    }
+  })
+  
+  // Find common tools (tools used by at least 50% of selected users)
+  const toolCounts: { [key: string]: number } = {}
+  selectedUserData.forEach(user => {
+    if (user.toolsUsed && Array.isArray(user.toolsUsed)) {
+      user.toolsUsed.forEach((tool: string) => {
+        toolCounts[tool] = (toolCounts[tool] || 0) + 1
+      })
+    }
+  })
+  
+  const commonTools = Object.keys(toolCounts).filter((tool: string) => 
+    toolCounts[tool] >= Math.max(1, Math.floor(selectedUserData.length * 0.5))
+  )
+  
+  // Calculate trend analysis
+  const trendCounts = {
+    increasing: 0,
+    stable: 0,
+    decreasing: 0
+  }
+  
+  selectedUserData.forEach(user => {
+    const trend = (user.trend || 'N/A').toLowerCase()
+    if (trend === 'increasing') trendCounts.increasing++
+    else if (trend === 'stable') trendCounts.stable++
+    else if (trend === 'decreasing') trendCounts.decreasing++
+  })
+  
+  // Calculate risk distribution
+  const riskCounts = {
+    low: 0,
+    medium: 0,
+    high: 0
+  }
+  
+  selectedUserData.forEach(user => {
+    const risk = (user.riskLevel || 'low').toLowerCase()
+    if (risk === 'low') riskCounts.low++
+    else if (risk === 'medium') riskCounts.medium++
+    else if (risk === 'high') riskCounts.high++
+  })
+  
+  return {
+    averageEngagement: Math.round(averageEngagement * 100) / 100,
+    totalToolsUsed: allToolsUsed.size,
+    commonTools,
+    trendAnalysis: trendCounts,
+    riskDistribution: riskCounts
   }
 }
