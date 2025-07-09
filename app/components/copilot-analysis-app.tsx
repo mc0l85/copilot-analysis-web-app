@@ -68,57 +68,23 @@ export function CopilotAnalysisApp() {
   useEffect(() => {
     const checkForExistingResults = async () => {
       try {
-        // Try to download excel file to check if analysis results exist
-        const response = await fetch('/api/download/excel', { method: 'HEAD' })
-        
-        if (response.ok) {
-          // If download works, create mock results to display the interface
-          const mockResults = {
-            status: 'success',
-            summary: {
-              total_users: 150,
-              top_utilizers: 45,
-              under_utilized: 70,
-              for_reallocation: 35
-            },
-            files: {
-              excel: 'existing',
-              html: 'existing'
-            },
-            sessionId: 'test-session-123'
-          }
-          
+        // Try to create test results for demonstration
+        const testResponse = await fetch('/api/test-results', { method: 'POST' })
+        if (testResponse.ok) {
+          const testResults = await testResponse.json()
           setAnalysisState(prev => ({
             ...prev,
-            results: mockResults,
-            sessionId: 'test-session-123'
+            results: testResults,
+            sessionId: testResults.sessionId
           }))
           
           toast({
-            title: "Previous results found",
-            description: "Displaying your most recent analysis results."
+            title: "Demo data loaded",
+            description: "Sample analysis results loaded for demonstration. Upload your own files to replace with real data."
           })
         }
       } catch (error) {
-        // No existing results, that's fine - try creating test results
-        try {
-          const testResponse = await fetch('/api/test-results', { method: 'POST' })
-          if (testResponse.ok) {
-            const testResults = await testResponse.json()
-            setAnalysisState(prev => ({
-              ...prev,
-              results: testResults,
-              sessionId: testResults.sessionId
-            }))
-            
-            toast({
-              title: "Test results loaded",
-              description: "Demo data has been loaded for testing."
-            })
-          }
-        } catch (testError) {
-          console.log('No test results available')
-        }
+        console.log('No test results available, starting fresh')
       }
     }
     
