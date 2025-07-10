@@ -9,6 +9,26 @@ import { analysisResults } from '@/lib/analysis-store'
 const isFileLike = (val: any): val is { arrayBuffer: () => Promise<ArrayBuffer>; name?: string; size?: number } =>
   val && typeof val === 'object' && typeof val.arrayBuffer === 'function';
 
+// Helper function to validate and parse JSON safely
+const safeJsonParse = (text: string): any => {
+  try {
+    // Trim whitespace and check if the string looks like JSON
+    const trimmed = text.trim();
+    if (!trimmed) {
+      throw new Error('Empty string provided for JSON parsing');
+    }
+    
+    // Basic validation - JSON should start with { or [
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+      throw new Error(`Invalid JSON format. Text starts with: "${trimmed.substring(0, 20)}..."`);
+    }
+    
+    return JSON.parse(trimmed);
+  } catch (error) {
+    throw new Error(`JSON parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}. Input: "${text.substring(0, 100)}..."`);
+  }
+};
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
@@ -102,10 +122,48 @@ export async function POST(request: NextRequest) {
       })
     })
     
-    // Parse results
-    const lines = result.trim().split('\\n')
+    // Parse results with improved error handling
+    console.log('Python script output:', result)
+    
+    const lines = result.trim().split('\n')
     const lastLine = lines[lines.length - 1]
-    const analysisResult = JSON.parse(lastLine)
+    
+    console.log('Last line from Python output:', lastLine)
+    
+    // Find the last valid JSON line (in case there are multiple lines)
+    let analysisResult: any = null
+    let jsonParseError: string | null = null
+    
+    // Try parsing from the last line backwards to find valid JSON
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i].trim()
+      if (line && (line.startsWith('{') || line.startsWith('['))) {
+        try {
+          analysisResult = safeJsonParse(line)
+          console.log('Successfully parsed JSON from line:', i + 1)
+          break
+        } catch (error) {
+          jsonParseError = error instanceof Error ? error.message : 'Unknown JSON parse error'
+          console.log(`Failed to parse line ${i + 1}:`, error)
+          continue
+        }
+      }
+    }
+    
+    // If no valid JSON was found, throw an error with helpful information
+    if (!analysisResult) {
+      const errorMessage = jsonParseError 
+        ? `No valid JSON found in Python output. Last parse error: ${jsonParseError}`
+        : 'No valid JSON found in Python output. Output may contain only non-JSON text.';
+      
+      console.error('Python output analysis failed:', {
+        totalLines: lines.length,
+        lastLine,
+        fullOutput: result.substring(0, 500) + (result.length > 500 ? '...' : '')
+      })
+      
+      throw new Error(`${errorMessage} Full output: ${result.substring(0, 200)}...`)
+    }
     
     if (analysisResult.status === 'error') {
       throw new Error(analysisResult.message)
