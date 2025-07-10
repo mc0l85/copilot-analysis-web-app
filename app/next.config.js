@@ -13,7 +13,13 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  images: { unoptimized: true },
+  devIndicators: {
+    allowedDevOrigins: ['http://10.211.66.119'],
+  },
+  // The 'images' block should be here, at the top level
+  images: { 
+    unoptimized: true 
+  }, 
 };
 
 module.exports = nextConfig;
