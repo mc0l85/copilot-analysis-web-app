@@ -1,10 +1,13 @@
-
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir, unlink } from 'fs/promises'
 import { spawn } from 'child_process'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { analysisResults } from '@/lib/analysis-store'
+
+// Server-safe type guard for file-like objects
+const isFileLike = (val: any): val is { arrayBuffer: () => Promise<ArrayBuffer>; name?: string; size?: number } =>
+  val && typeof val === 'object' && typeof val.arrayBuffer === 'function';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,8 +18,8 @@ export async function POST(request: NextRequest) {
     const tempDir = path.join(process.cwd(), 'temp', sessionId)
     await mkdir(tempDir, { recursive: true })
     
-    // Process uploaded files
-    const targetUsersFile = formData.get('targetUsersFile') as File
+    // Process uploaded files - remove explicit File type annotation
+    const targetUsersFile = formData.get('targetUsersFile')
     const filters = JSON.parse(formData.get('filters') as string || '{}')
     
     const filePaths: string[] = []
@@ -24,17 +27,17 @@ export async function POST(request: NextRequest) {
     
     // Save target users file if provided
     let targetUsersPath = ''
-    if (targetUsersFile && targetUsersFile.size > 0) {
+    if (targetUsersFile && isFileLike(targetUsersFile) && (targetUsersFile.size || 0) > 0) {
       const targetUsersBuffer = Buffer.from(await targetUsersFile.arrayBuffer())
       targetUsersPath = path.join(tempDir, 'target_users.csv')
       await writeFile(targetUsersPath, targetUsersBuffer)
       filePaths.push(targetUsersPath)
     }
     
-    // Save usage report files
-    const usageReportFiles: File[] = []
+    // Save usage report files - use more generic type
+    const usageReportFiles: any[] = []
     for (const [key, value] of formData.entries()) {
-      if (key.startsWith('usageReportFile_') && value instanceof File) {
+      if (key.startsWith('usageReportFile_') && isFileLike(value)) {
         usageReportFiles.push(value)
       }
     }
@@ -42,7 +45,7 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < usageReportFiles.length; i++) {
       const file = usageReportFiles[i]
       const buffer = Buffer.from(await file.arrayBuffer())
-      const extension = file.name.split('.').pop() || 'csv'
+      const extension = file.name?.split('.').pop() || 'csv'
       const filePath = path.join(tempDir, `usage_report_${i}.${extension}`)
       await writeFile(filePath, buffer)
       usageReportPaths.push(filePath)
