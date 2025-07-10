@@ -259,9 +259,9 @@ export function CopilotAnalysisApp() {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Control Panel */}
-        <div className="lg:col-span-1 space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        {/* Control Panel - Fixed width on large screens, full width on smaller screens */}
+        <div className="xl:col-span-1 space-y-6">
           {/* File Upload Section */}
           <Card>
             <CardHeader>
@@ -330,8 +330,8 @@ export function CopilotAnalysisApp() {
           </Card>
         </div>
 
-        {/* Results Panel */}
-        <div className="lg:col-span-2">
+        {/* Results Panel - Auto-expanding to fill remaining space */}
+        <div className="xl:col-span-3">
           <Card className="h-full">
             <CardContent className="p-6">
               {analysisState.isProcessing && (
