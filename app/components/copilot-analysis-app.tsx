@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
@@ -259,9 +258,10 @@ export function CopilotAnalysisApp() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-        {/* Control Panel - Fixed width on large screens, full width on smaller screens */}
-        <div className="xl:col-span-1 space-y-6">
+      {/* Responsive Grid Layout - Auto-expanding right panel */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* Control Panel - Full width on mobile, 3 columns on xl screens when results exist, 4 when no results */}
+        <div className={`space-y-6 ${analysisState.results ? 'xl:col-span-3' : 'xl:col-span-4'}`}>
           {/* File Upload Section */}
           <Card>
             <CardHeader>
@@ -330,68 +330,80 @@ export function CopilotAnalysisApp() {
           </Card>
         </div>
 
-        {/* Results Panel - Auto-expanding to fill remaining space */}
-        <div className="xl:col-span-3">
-          <Card className="h-full">
-            <CardContent className="p-6">
+        {/* Results Panel - Full width on mobile, 9 columns when results exist, 8 when no results */}
+        <div className={`${analysisState.results ? 'xl:col-span-9' : 'xl:col-span-8'}`}>
+          <Card className="h-full min-h-[600px]">
+            <CardContent className="p-6 h-full">
               {analysisState.isProcessing && (
-                <ProcessingStatus />
+                <div className="flex items-center justify-center h-full">
+                  <ProcessingStatus />
+                </div>
               )}
               
               {analysisState.error && (
-                <div className="text-center py-12">
-                  <div className="text-destructive mb-4">
-                    <TrendingUp className="h-12 w-12 mx-auto mb-2" />
-                    <h3 className="text-lg font-semibold">Analysis Failed</h3>
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center py-12">
+                    <div className="text-destructive mb-4">
+                      <TrendingUp className="h-12 w-12 mx-auto mb-2" />
+                      <h3 className="text-lg font-semibold">Analysis Failed</h3>
+                    </div>
+                    <p className="text-muted-foreground">{analysisState.error}</p>
                   </div>
-                  <p className="text-muted-foreground">{analysisState.error}</p>
                 </div>
               )}
               
               {!analysisState.isProcessing && !analysisState.error && !analysisState.results && (
-                <div className="text-center py-12">
-                  <div className="text-muted-foreground mb-4">
-                    <Trophy className="h-12 w-12 mx-auto mb-2" />
-                    <h3 className="text-lg font-semibold">Ready to Analyze</h3>
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center py-12">
+                    <div className="text-muted-foreground mb-4">
+                      <Trophy className="h-12 w-12 mx-auto mb-2" />
+                      <h3 className="text-lg font-semibold">Ready to Analyze</h3>
+                    </div>
+                    <p className="text-muted-foreground">
+                      Your analysis results will appear here after processing
+                    </p>
                   </div>
-                  <p className="text-muted-foreground">
-                    Your analysis results will appear here after processing
-                  </p>
                 </div>
               )}
               
               {analysisState.results && (
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="analysis">Analysis</TabsTrigger>
-                    <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-                    <TabsTrigger value="deep-dive">Deep Dive</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="analysis" className="mt-6">
-                    <AnalysisResults results={analysisState.results} sessionId={analysisState.sessionId} />
-                  </TabsContent>
-                  
-                  <TabsContent value="leaderboard" className="mt-6">
-                    <div className="text-center py-8">
-                      <Trophy className="h-12 w-12 mx-auto mb-4 text-primary" />
-                      <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
-                      <p className="text-muted-foreground mb-4">
-                        View top performing users in the interactive leaderboard
-                      </p>
-                      <Button
-                        onClick={() => window.open(`/api/download/leaderboard?sessionId=${analysisState.sessionId}`, '_blank')}
-                        variant="outline"
-                      >
-                        Open Leaderboard
-                      </Button>
+                <div className="h-full flex flex-col">
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+                    <TabsList className="grid w-full grid-cols-3 mb-6">
+                      <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                      <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+                      <TabsTrigger value="deep-dive">Deep Dive</TabsTrigger>
+                    </TabsList>
+                    
+                    <div className="flex-1 overflow-auto">
+                      <TabsContent value="analysis" className="mt-0 h-full">
+                        <AnalysisResults results={analysisState.results} sessionId={analysisState.sessionId} />
+                      </TabsContent>
+                      
+                      <TabsContent value="leaderboard" className="mt-0 h-full">
+                        <div className="flex items-center justify-center h-full">
+                          <div className="text-center py-8">
+                            <Trophy className="h-12 w-12 mx-auto mb-4 text-primary" />
+                            <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
+                            <p className="text-muted-foreground mb-4">
+                              View top performing users in the interactive leaderboard
+                            </p>
+                            <Button
+                              onClick={() => window.open(`/api/download/leaderboard?sessionId=${analysisState.sessionId}`, '_blank')}
+                              variant="outline"
+                            >
+                              Open Leaderboard
+                            </Button>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="deep-dive" className="mt-0 h-full">
+                        <DeepDiveAnalysis sessionId={analysisState.sessionId} />
+                      </TabsContent>
                     </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="deep-dive" className="mt-6">
-                    <DeepDiveAnalysis sessionId={analysisState.sessionId} />
-                  </TabsContent>
-                </Tabs>
+                  </Tabs>
+                </div>
               )}
             </CardContent>
           </Card>
