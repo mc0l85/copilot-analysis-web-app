@@ -1,6 +1,156 @@
+import { writeFile, readFile, mkdir, access } from 'fs/promises'
+import path from 'path'
 
-// Shared store for analysis results
-export const analysisResults = new Map<string, any>()
+// File-based persistent storage for analysis results
+class PersistentAnalysisStore {
+  private storageDir: string
+  private memoryCache = new Map<string, any>()
+
+  constructor() {
+    this.storageDir = path.join(process.cwd(), 'temp', 'sessions')
+  }
+
+  private async ensureStorageDir() {
+    try {
+      await access(this.storageDir)
+    } catch {
+      await mkdir(this.storageDir, { recursive: true })
+    }
+  }
+
+  private getSessionFilePath(sessionId: string): string {
+    return path.join(this.storageDir, `${sessionId}.json`)
+  }
+
+  async set(sessionId: string, data: any): Promise<void> {
+    try {
+      await this.ensureStorageDir()
+      
+      // Store in memory cache for quick access
+      this.memoryCache.set(sessionId, data)
+      
+      // Persist to file system
+      const filePath = this.getSessionFilePath(sessionId)
+      await writeFile(filePath, JSON.stringify(data, null, 2))
+      
+      console.log(`Session ${sessionId} stored successfully`)
+    } catch (error) {
+      console.error(`Failed to store session ${sessionId}:`, error)
+      // Still keep in memory cache as fallback
+      this.memoryCache.set(sessionId, data)
+    }
+  }
+
+  async get(sessionId: string): Promise<any | undefined> {
+    try {
+      // First check memory cache
+      if (this.memoryCache.has(sessionId)) {
+        console.log(`Session ${sessionId} found in memory cache`)
+        return this.memoryCache.get(sessionId)
+      }
+
+      // Try to load from file system
+      const filePath = this.getSessionFilePath(sessionId)
+      const fileContent = await readFile(filePath, 'utf-8')
+      const data = JSON.parse(fileContent)
+      
+      // Cache in memory for future access
+      this.memoryCache.set(sessionId, data)
+      
+      console.log(`Session ${sessionId} loaded from file system`)
+      return data
+    } catch (error) {
+      console.log(`Session ${sessionId} not found:`, error.message)
+      return undefined
+    }
+  }
+
+  async delete(sessionId: string): Promise<void> {
+    try {
+      // Remove from memory cache
+      this.memoryCache.delete(sessionId)
+      
+      // Remove from file system
+      const filePath = this.getSessionFilePath(sessionId)
+      const { unlink } = await import('fs/promises')
+      await unlink(filePath)
+      
+      console.log(`Session ${sessionId} deleted successfully`)
+    } catch (error) {
+      console.error(`Failed to delete session ${sessionId}:`, error)
+    }
+  }
+
+  keys(): string[] {
+    return Array.from(this.memoryCache.keys())
+  }
+
+  async getAllKeys(): Promise<string[]> {
+    try {
+      await this.ensureStorageDir()
+      const { readdir } = await import('fs/promises')
+      const files = await readdir(this.storageDir)
+      return files
+        .filter(file => file.endsWith('.json'))
+        .map(file => file.replace('.json', ''))
+    } catch (error) {
+      console.error('Failed to get all session keys:', error)
+      return this.keys()
+    }
+  }
+}
+
+// Create a singleton instance
+const persistentStore = new PersistentAnalysisStore()
+
+// Export a Map-like interface for backward compatibility
+export const analysisResults = {
+  async set(sessionId: string, data: any): Promise<void> {
+    return persistentStore.set(sessionId, data)
+  },
+  
+  async get(sessionId: string): Promise<any | undefined> {
+    return persistentStore.get(sessionId)
+  },
+  
+  async delete(sessionId: string): Promise<void> {
+    return persistentStore.delete(sessionId)
+  },
+  
+  keys(): string[] {
+    return persistentStore.keys()
+  },
+
+  async getAllKeys(): Promise<string[]> {
+    return persistentStore.getAllKeys()
+  }
+}
+
+// For backward compatibility with synchronous access patterns
+// This maintains an in-memory fallback
+const legacyMap = new Map<string, any>()
+
+// Legacy synchronous interface (deprecated but maintained for compatibility)
+export const analysisResultsLegacy = {
+  set(sessionId: string, data: any): void {
+    legacyMap.set(sessionId, data)
+    // Also store in persistent storage asynchronously
+    persistentStore.set(sessionId, data).catch(console.error)
+  },
+  
+  get(sessionId: string): any | undefined {
+    return legacyMap.get(sessionId)
+  },
+  
+  delete(sessionId: string): void {
+    legacyMap.delete(sessionId)
+    persistentStore.delete(sessionId).catch(console.error)
+  },
+  
+  keys(): string[] {
+    return Array.from(legacyMap.keys())
+  }
+}
 
 // Helper function to create test results for demonstration
 export function createTestResults() {
@@ -108,6 +258,7 @@ export function createTestResults() {
     detailed_users: detailed_users
   }
   
-  analysisResults.set(testSessionId, testResults)
+  // Store using the new persistent storage
+  persistentStore.set(testSessionId, testResults).catch(console.error)
   return testResults
 }
