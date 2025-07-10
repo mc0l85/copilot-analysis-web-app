@@ -1,0 +1,38 @@
+➤ YN0000: · Yarn 4.9.2
+➤ YN0000: ┌ Resolution step
+➤ YN0085: │ + @types/uuid@npm:10.0.0, class-variance-authority@npm:0.7.1, uuid@npm:11.1.0
+➤ YN0085: │ - class-variance-authority@npm:0.7.0, clsx@npm:2.0.0
+➤ YN0000: └ Completed in 0s 397ms
+➤ YN0000: ┌ Post-resolution validation
+➤ YN0060: │ @typescript-eslint/parser is listed by your project with version 7.0.0 (p6cb6c), which doesn't satisfy what @typescript-eslint/eslint-plugin requests (^6.0.0-alpha).
+➤ YN0060: │ eslint is listed by your project with version 9.24.0 (pe6e00), which doesn't satisfy what @typescript-eslint/eslint-plugin and other dependencies request (^8.57.0).
+➤ YN0002: │ app@workspace:. doesn't provide prettier (pd88b5), requested by eslint-plugin-prettier.
+➤ YN0086: │ Some peer dependencies are incorrectly met by your project; run yarn explain peer-requirements <hash> for details, where <hash> is the six-letter p-prefixed code.
+➤ YN0086: │ Some peer dependencies are incorrectly met by dependencies; run yarn explain peer-requirements for details.
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Fetch step
+➤ YN0000: └ Completed in 3s 386ms
+➤ YN0000: ┌ Link step
+➤ YN0000: └ Completed in 0s 702ms
+➤ YN0000: · Done with warnings in 4s 687ms
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.7.0) to ./node_modules/.prisma/client in 71ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want real-time updates to your database without manual polling? Discover how with Pulse: https://pris.ly/tip-0-pulse
+
+Starting server...
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1783ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.3s (1805 modules)
+ ✓ Compiled in 604ms (908 modules)
+ GET / 200 in 77ms
+ GET / 200 in 34ms
