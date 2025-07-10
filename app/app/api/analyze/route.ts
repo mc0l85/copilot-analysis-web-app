@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     })
     
     // Parse results
-    const lines = result.trim().split('\n')
+    const lines = result.trim().split('\\n')
     const lastLine = lines[lines.length - 1]
     const analysisResult = JSON.parse(lastLine)
     
@@ -111,18 +111,23 @@ export async function POST(request: NextRequest) {
       throw new Error(analysisResult.message)
     }
     
-    // Store results with session ID
-    analysisResults.set(sessionId, {
+    // Store results with session ID using the new async interface
+    const sessionData = {
       ...analysisResult,
       tempDir,
       filePaths,
       sessionId
-    })
+    }
+    
+    console.log(`Storing analysis results for session ${sessionId}`)
+    await analysisResults.set(sessionId, sessionData)
+    console.log(`Session ${sessionId} stored successfully`)
     
     // Schedule cleanup after 5 minutes
     setTimeout(async () => {
       try {
-        const resultData = analysisResults.get(sessionId)
+        console.log(`Starting cleanup for session ${sessionId}`)
+        const resultData = await analysisResults.get(sessionId)
         if (resultData) {
           // Clean up files
           for (const filePath of resultData.filePaths) {
@@ -146,7 +151,8 @@ export async function POST(request: NextRequest) {
             console.error('Error deleting HTML file:', e)
           }
           
-          analysisResults.delete(sessionId)
+          await analysisResults.delete(sessionId)
+          console.log(`Session ${sessionId} cleaned up successfully`)
         }
       } catch (error) {
         console.error('Cleanup error:', error)
