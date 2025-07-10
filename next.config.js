@@ -13,9 +13,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  devIndicators: {
-    allowedDevOrigins: ['http://10.211.66.119'],
-  },
+  // Fix: allowedDevOrigins should be at top level, not under devIndicators
+  // and should specify hostname without protocol
+  allowedDevOrigins: ['10.211.66.119'],
   // The 'images' block should be here, at the top level
   images: { 
     unoptimized: true 
