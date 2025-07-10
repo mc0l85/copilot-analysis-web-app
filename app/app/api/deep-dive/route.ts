@@ -14,12 +14,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 })
     }
     
-    let results = analysisResults.get(sessionId)
+    // Use the new async storage interface
+    let results = await analysisResults.get(sessionId)
     console.log('Results found:', !!results)
     
     if (!results) {
       console.log('Session not found in analysisResults')
-      console.log('Available sessions:', Array.from(analysisResults.keys()))
+      
+      // Get all available sessions for debugging
+      try {
+        const availableSessions = await analysisResults.getAllKeys()
+        console.log('Available sessions:', availableSessions)
+      } catch (error) {
+        console.log('Could not retrieve available sessions:', error)
+        console.log('Available sessions (memory only):', analysisResults.keys())
+      }
       
       // Try to create test results if the session is the test session
       if (sessionId === 'test-session-123') {
@@ -70,7 +79,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 })
     }
     
-    const results = analysisResults.get(sessionId)
+    // Use the new async storage interface
+    const results = await analysisResults.get(sessionId)
     if (!results) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
