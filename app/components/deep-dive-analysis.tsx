@@ -482,9 +482,9 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         </CardContent>
       </Card>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className={`grid gap-6 ${selectedUsers.size > 0 ? 'lg:grid-cols-[300px,1fr]' : 'lg:grid-cols-3'}`}>
         {/* User List */}
-        <Card className="lg:col-span-1">
+        <Card className={selectedUsers.size > 0 ? '' : 'lg:col-span-1'}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
@@ -559,7 +559,7 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         </Card>
 
         {/* Analysis Panel */}
-        <Card className="lg:col-span-2">
+        <Card className={selectedUsers.size > 0 ? '' : 'lg:col-span-2'}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
