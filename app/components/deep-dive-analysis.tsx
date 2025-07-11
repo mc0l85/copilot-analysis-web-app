@@ -482,9 +482,29 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         </CardContent>
       </Card>
 
-      <div className={`grid gap-6 ${selectedUsers.size > 0 ? 'lg:grid-cols-[300px,1fr]' : 'lg:grid-cols-3'}`}>
+      <div 
+        className={selectedUsers.size > 0 ? 'flex gap-6' : 'grid gap-6 lg:grid-cols-3'}
+        style={selectedUsers.size > 0 ? {
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '1.5rem',
+          width: '100%',
+          maxWidth: '100%',
+          alignItems: 'flex-start'
+        } : {}}
+      >
         {/* User List */}
-        <Card className={selectedUsers.size > 0 ? '' : 'lg:col-span-1'}>
+        <Card 
+          className={selectedUsers.size > 0 ? 'deep-dive-user-list flex-shrink-0' : 'lg:col-span-1'}
+          style={selectedUsers.size > 0 ? {
+            width: '250px',
+            maxWidth: '250px',
+            minWidth: '250px',
+            flexShrink: 0,
+            flexGrow: 0,
+            flexBasis: '250px'
+          } : {}}
+        >
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
@@ -559,7 +579,18 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         </Card>
 
         {/* Analysis Panel */}
-        <Card className={selectedUsers.size > 0 ? '' : 'lg:col-span-2'}>
+        <Card 
+          className={selectedUsers.size > 0 ? 'deep-dive-details flex-grow' : 'lg:col-span-2'}
+          style={selectedUsers.size > 0 ? {
+            flex: '1 1 auto',
+            minWidth: '0',
+            width: 'auto',
+            maxWidth: '100%',
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: 'auto'
+          } : {}}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
