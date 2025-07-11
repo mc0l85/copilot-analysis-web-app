@@ -1,7 +1,6 @@
-
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -99,83 +98,154 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [classificationFilter, setClassificationFilter] = useState<string>('all')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [comparisonData, setComparisonData] = useState<any>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  const [dataLoaded, setDataLoaded] = useState(false)
   
   const { toast } = useToast()
+  const fetchAttemptRef = useRef<string | null>(null)
 
-  // Fetch user data
-  useEffect(() => {
-    if (!sessionId) return
+  // Fetch user data with proper error handling and race condition prevention
+  const fetchUsers = useCallback(async (currentSessionId: string) => {
+    if (!currentSessionId) return
     
-    const fetchUsers = async () => {
-      setLoading(true)
-      try {
-        const response = await fetch(`/api/deep-dive?sessionId=${sessionId}`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data')
-        }
+    // Prevent race conditions by tracking the current fetch attempt
+    fetchAttemptRef.current = currentSessionId
+    
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const response = await fetch(`/api/deep-dive?sessionId=${currentSessionId}`)
+      
+      // Check if this is still the current session we care about
+      if (fetchAttemptRef.current !== currentSessionId) {
+        return // Ignore this response as a newer request is in progress
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user data: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      
+      // Double-check we're still on the same session
+      if (fetchAttemptRef.current === currentSessionId) {
+        const userData = data.users || []
+        setUsers(userData)
+        setFilteredUsers(userData)
+        setDataLoaded(true)
         
-        const data = await response.json()
-        setUsers(data.users || [])
-        setFilteredUsers(data.users || [])
-      } catch (error) {
+        // Auto-expand details pane by selecting first user if available
+        if (userData.length > 0 && selectedUsers.size === 0) {
+          setSelectedUsers(new Set([userData[0].email]))
+          setActiveTab('individual')
+        }
+      }
+    } catch (error) {
+      // Only set error if this is still the current session
+      if (fetchAttemptRef.current === currentSessionId) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load user data'
+        setError(errorMessage)
         console.error('Error fetching users:', error)
         toast({
           title: "Error",
-          description: "Failed to load user data",
+          description: errorMessage,
           variant: "destructive"
         })
-      } finally {
+      }
+    } finally {
+      // Only clear loading if this is still the current session
+      if (fetchAttemptRef.current === currentSessionId) {
         setLoading(false)
       }
     }
-    
-    fetchUsers()
-  }, [sessionId, toast])
+  }, [toast, selectedUsers.size])
 
-  // Filter users based on search and classification
+  // Effect to fetch data when sessionId changes
   useEffect(() => {
-    let filtered = users
+    if (sessionId) {
+      // Reset state when sessionId changes
+      setUsers([])
+      setFilteredUsers([])
+      setSelectedUsers(new Set())
+      setComparisonData(null)
+      setDataLoaded(false)
+      setError(null)
+      
+      fetchUsers(sessionId)
+    } else {
+      // Clear data when no sessionId
+      setUsers([])
+      setFilteredUsers([])
+      setSelectedUsers(new Set())
+      setComparisonData(null)
+      setDataLoaded(false)
+      setError(null)
+      setLoading(false)
+    }
+  }, [sessionId, fetchUsers])
+
+  // Memoized filter function to prevent unnecessary re-renders
+  const applyFilters = useCallback((userList: User[], query: string, classification: string) => {
+    let filtered = userList
     
-    if (searchQuery) {
+    if (query.trim()) {
+      const lowerQuery = query.toLowerCase()
       filtered = filtered.filter(user => 
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+        user.email.toLowerCase().includes(lowerQuery)
       )
     }
     
-    if (classificationFilter !== 'all') {
+    if (classification !== 'all') {
       filtered = filtered.filter(user => 
-        user.classification === classificationFilter
+        user.classification === classification
       )
     }
     
-    setFilteredUsers(filtered)
-  }, [users, searchQuery, classificationFilter])
+    return filtered
+  }, [])
+
+  // Filter users based on search and classification with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const filtered = applyFilters(users, searchQuery, classificationFilter)
+      setFilteredUsers(filtered)
+    }, 150) // Small debounce to prevent excessive filtering
+
+    return () => clearTimeout(timeoutId)
+  }, [users, searchQuery, classificationFilter, applyFilters])
+
+  // Memoized comparison data generation
+  const generateComparisonData = useCallback((selectedUserEmails: Set<string>, allUsers: User[]) => {
+    if (selectedUserEmails.size === 0) return null
+    
+    const selectedUserArray = Array.from(selectedUserEmails)
+    const selectedUserData = allUsers.filter(user => selectedUserEmails.has(user.email))
+    
+    if (selectedUserData.length === 0) return null
+    
+    const comparison = {
+      averageEngagement: selectedUserData.reduce((sum, user) => sum + user.engagementScore, 0) / selectedUserData.length,
+      averageConsistency: selectedUserData.reduce((sum, user) => sum + user.consistencyPercent, 0) / selectedUserData.length,
+      totalToolsUsed: new Set(selectedUserData.flatMap(user => user.toolsUsed)).size,
+      commonTools: getCommonTools(selectedUserData),
+      trendAnalysis: getTrendAnalysis(selectedUserData),
+      riskDistribution: getRiskDistribution(selectedUserData),
+      monthlyComparison: getMonthlyComparison(selectedUserData)
+    }
+    
+    return comparison
+  }, [])
 
   // Generate comparison data when users are selected
   useEffect(() => {
-    if (selectedUsers.size > 0) {
-      const selectedUserArray = Array.from(selectedUsers)
-      const selectedUserData = users.filter(user => selectedUsers.has(user.email))
-      
-      const comparison = {
-        averageEngagement: selectedUserData.reduce((sum, user) => sum + user.engagementScore, 0) / selectedUserData.length,
-        averageConsistency: selectedUserData.reduce((sum, user) => sum + user.consistencyPercent, 0) / selectedUserData.length,
-        totalToolsUsed: new Set(selectedUserData.flatMap(user => user.toolsUsed)).size,
-        commonTools: getCommonTools(selectedUserData),
-        trendAnalysis: getTrendAnalysis(selectedUserData),
-        riskDistribution: getRiskDistribution(selectedUserData),
-        monthlyComparison: getMonthlyComparison(selectedUserData)
-      }
-      
-      setComparisonData(comparison)
-    } else {
-      setComparisonData(null)
-    }
-  }, [selectedUsers, users])
+    const comparison = generateComparisonData(selectedUsers, users)
+    setComparisonData(comparison)
+  }, [selectedUsers, users, generateComparisonData])
 
-  const getCommonTools = (users: User[]) => {
+  const getCommonTools = useCallback((users: User[]) => {
     if (users.length === 0) return []
     
     const toolCounts = users.reduce((acc, user) => {
@@ -188,27 +258,27 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
     return Object.entries(toolCounts)
       .filter(([_, count]) => count > users.length * 0.5)
       .map(([tool, count]) => ({ tool, count }))
-  }
+  }, [])
 
-  const getTrendAnalysis = (users: User[]) => {
+  const getTrendAnalysis = useCallback((users: User[]) => {
     const trends = users.reduce((acc, user) => {
       acc[user.trend] = (acc[user.trend] || 0) + 1
       return acc
     }, {} as Record<string, number>)
     
     return Object.entries(trends).map(([trend, count]) => ({ trend, count }))
-  }
+  }, [])
 
-  const getRiskDistribution = (users: User[]) => {
+  const getRiskDistribution = useCallback((users: User[]) => {
     const risks = users.reduce((acc, user) => {
       acc[user.riskLevel] = (acc[user.riskLevel] || 0) + 1
       return acc
     }, {} as Record<string, number>)
     
     return Object.entries(risks).map(([risk, count]) => ({ risk, count }))
-  }
+  }, [])
 
-  const getMonthlyComparison = (users: User[]) => {
+  const getMonthlyComparison = useCallback((users: User[]) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     
     return months.map(month => {
@@ -223,36 +293,55 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         averageComplexity: monthData.reduce((sum, data) => sum + data.complexity, 0) / users.length
       }
     })
-  }
+  }, [])
 
-  const toggleUserSelection = (email: string) => {
-    const newSelected = new Set(selectedUsers)
-    if (newSelected.has(email)) {
-      newSelected.delete(email)
-    } else {
-      newSelected.add(email)
-    }
-    setSelectedUsers(newSelected)
-  }
+  const toggleUserSelection = useCallback((email: string) => {
+    setSelectedUsers(prev => {
+      const newSelected = new Set(prev)
+      if (newSelected.has(email)) {
+        newSelected.delete(email)
+      } else {
+        newSelected.add(email)
+      }
+      
+      // Auto-switch to appropriate tab based on selection
+      if (newSelected.size === 1) {
+        setActiveTab('individual')
+      } else if (newSelected.size > 1) {
+        setActiveTab('comparison')
+      }
+      
+      return newSelected
+    })
+  }, [])
 
-  const clearSelection = () => {
+  const clearSelection = useCallback(() => {
     setSelectedUsers(new Set())
-  }
+    setActiveTab('overview')
+  }, [])
 
-  const selectAllFiltered = () => {
+  const selectAllFiltered = useCallback(() => {
     setSelectedUsers(new Set(filteredUsers.map(user => user.email)))
-  }
+    if (filteredUsers.length > 1) {
+      setActiveTab('comparison')
+    } else if (filteredUsers.length === 1) {
+      setActiveTab('individual')
+    }
+  }, [filteredUsers])
 
-  const getTrendIcon = (trend: string) => {
+  const getTrendIcon = useCallback((trend: string) => {
     switch (trend) {
       case 'Increasing': return <TrendingUp className="h-4 w-4 text-green-600" />
       case 'Decreasing': return <TrendingDown className="h-4 w-4 text-red-600" />
       case 'Stable': return <Minus className="h-4 w-4 text-yellow-600" />
       default: return <Minus className="h-4 w-4 text-gray-600" />
     }
-  }
+  }, [])
 
+  // Memoized statistics to prevent unnecessary recalculations
   const classificationStats = useMemo(() => {
+    if (users.length === 0) return []
+    
     const stats = users.reduce((acc, user) => {
       acc[user.classification] = (acc[user.classification] || 0) + 1
       return acc
@@ -266,6 +355,8 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
   }, [users])
 
   const engagementDistribution = useMemo(() => {
+    if (users.length === 0) return []
+    
     const ranges = [
       { range: '0-0.5', min: 0, max: 0.5 },
       { range: '0.5-1.0', min: 0.5, max: 1.0 },
@@ -281,11 +372,44 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
     }))
   }, [users])
 
+  // Show loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2">Loading user data...</span>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <XCircle className="h-12 w-12 mx-auto mb-4 text-destructive" />
+          <h3 className="text-lg font-semibold mb-2">Failed to Load Data</h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => sessionId && fetchUsers(sessionId)} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Show empty state
+  if (!dataLoaded || users.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">No User Data Available</h3>
+          <p className="text-muted-foreground">
+            {!sessionId ? 'Please run an analysis first to view deep dive data.' : 'No detailed user data found for this analysis.'}
+          </p>
+        </div>
       </div>
     )
   }
@@ -714,22 +838,13 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={150}>
-              <RechartsPieChart>
-                <Pie
-                  data={comparisonData.riskDistribution}
-                  dataKey="count"
-                  nameKey="risk"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={60}
-                  label={({risk, count}) => `${risk}: ${count}`}
-                >
-                  {comparisonData.riskDistribution.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
+              <BarChart data={comparisonData.riskDistribution}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="risk" tick={{fontSize: 10}} />
+                <YAxis tick={{fontSize: 10}} />
                 <Tooltip />
-              </RechartsPieChart>
+                <Bar dataKey="count" fill={COLORS[2]} />
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -749,7 +864,7 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
               <Area 
                 type="monotone" 
                 dataKey="averageToolsUsed" 
-                stackId="1" 
+                stackId="1"
                 stroke={COLORS[0]} 
                 fill={COLORS[0]}
                 name="Avg Tools Used"
@@ -757,7 +872,7 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
               <Area 
                 type="monotone" 
                 dataKey="averageComplexity" 
-                stackId="1" 
+                stackId="2"
                 stroke={COLORS[1]} 
                 fill={COLORS[1]}
                 name="Avg Complexity"
@@ -771,67 +886,53 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
 }
 
 function TrendsAnalysis({ users, comparisonData }: { users: User[], comparisonData: any }) {
-  const engagementTrend = users.map(user => ({
-    email: user.email.split('@')[0],
-    engagement: user.engagementScore,
-    consistency: user.consistencyPercent,
-    complexity: user.complexityScore
-  }))
+  if (!comparisonData) return null
   
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">User Performance Comparison</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={engagementTrend}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="email" tick={{fontSize: 10}} angle={-45} textAnchor="end" height={80} />
-              <YAxis tick={{fontSize: 10}} />
-              <Tooltip />
-              <Bar dataKey="engagement" fill={COLORS[0]} name="Engagement Score" />
-              <Bar dataKey="consistency" fill={COLORS[1]} name="Consistency %" />
-              <Bar dataKey="complexity" fill={COLORS[2]} name="Complexity Score" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-      
-      {comparisonData?.monthlyComparison && (
+      <div className="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Monthly Trend Analysis</CardTitle>
+            <CardTitle className="text-lg">Common Tools</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <RechartsLineChart data={comparisonData.monthlyComparison}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" tick={{fontSize: 10}} />
-                <YAxis tick={{fontSize: 10}} />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="averageToolsUsed" 
-                  stroke={COLORS[0]} 
-                  strokeWidth={3}
-                  name="Avg Tools Used"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="averageComplexity" 
-                  stroke={COLORS[1]} 
-                  strokeWidth={3}
-                  name="Avg Complexity"
-                />
-              </RechartsLineChart>
-            </ResponsiveContainer>
+            <div className="space-y-2">
+              {comparisonData.commonTools.map((tool: any, index: number) => (
+                <div key={index} className="flex justify-between items-center">
+                  <Badge variant="outline">{tool.tool}</Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {tool.count}/{users.length} users
+                  </span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-      )}
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">User Timeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {users.map((user, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">{user.email}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(user.firstAppearance).toLocaleDateString()} - {new Date(user.lastActivity).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <Badge className={getClassificationColor(user.classification)}>
+                    {user.classification.split(' ')[0]}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
-
-
