@@ -136,12 +136,6 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         setUsers(userData)
         setFilteredUsers(userData)
         setDataLoaded(true)
-        
-        // Auto-expand details pane by selecting first user if available
-        if (userData.length > 0 && selectedUsers.size === 0) {
-          setSelectedUsers(new Set([userData[0].email]))
-          setActiveTab('individual')
-        }
       }
     } catch (error) {
       // Only set error if this is still the current session
@@ -161,7 +155,7 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         setLoading(false)
       }
     }
-  }, [toast, selectedUsers.size])
+  }, [toast]) // Removed selectedUsers.size from dependencies to prevent infinite loop
 
   // Effect to fetch data when sessionId changes
   useEffect(() => {
@@ -186,6 +180,15 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
       setLoading(false)
     }
   }, [sessionId, fetchUsers])
+
+  // Separate effect to handle auto-selection after data is loaded
+  useEffect(() => {
+    if (dataLoaded && users.length > 0 && selectedUsers.size === 0) {
+      // Auto-expand details pane by selecting first user if available
+      setSelectedUsers(new Set([users[0].email]))
+      setActiveTab('individual')
+    }
+  }, [dataLoaded, users, selectedUsers.size])
 
   // Memoized filter function to prevent unnecessary re-renders
   const applyFilters = useCallback((userList: User[], query: string, classification: string) => {
@@ -620,316 +623,275 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
               <TabsContent value="individual" className="space-y-4">
                 {selectedUsers.size === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Select a user to view detailed individual analysis
+                    Select a user from the list to view individual analysis
                   </div>
-                ) : selectedUsers.size === 1 ? (
-                  <IndividualUserAnalysis 
-                    user={users.find(u => selectedUsers.has(u.email))!} 
-                  />
-                ) : (
+                ) : selectedUsers.size > 1 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     Select only one user to view individual analysis
                   </div>
+                ) : (
+                  (() => {
+                    const selectedUser = users.find(user => selectedUsers.has(user.email))
+                    if (!selectedUser) return null
+                    
+                    return (
+                      <div className="space-y-4">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center justify-between">
+                              <span>{selectedUser.email}</span>
+                              <div className="flex items-center gap-2">
+                                <Badge className={getClassificationColor(selectedUser.classification)}>
+                                  {selectedUser.classification}
+                                </Badge>
+                                {getRiskIcon(selectedUser.riskLevel)}
+                              </div>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Engagement Score:</span>
+                                  <span className="font-medium">{selectedUser.engagementScore.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Consistency:</span>
+                                  <span className="font-medium">{selectedUser.consistencyPercent.toFixed(0)}%</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Complexity Score:</span>
+                                  <span className="font-medium">{selectedUser.complexityScore.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Avg Tools/Report:</span>
+                                  <span className="font-medium">{selectedUser.avgToolsPerReport.toFixed(1)}</span>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Appearances:</span>
+                                  <span className="font-medium">{selectedUser.appearances}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">First Seen:</span>
+                                  <span className="font-medium">{selectedUser.firstAppearance}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Last Activity:</span>
+                                  <span className="font-medium">{selectedUser.lastActivity}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-muted-foreground">Trend:</span>
+                                  <div className="flex items-center gap-1">
+                                    {getTrendIcon(selectedUser.trend)}
+                                    <span className="font-medium">{selectedUser.trend}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <Separator className="my-4" />
+                            
+                            <div className="space-y-3">
+                              <h4 className="font-medium">Justification</h4>
+                              <p className="text-sm text-muted-foreground">{selectedUser.justification}</p>
+                            </div>
+                            
+                            <Separator className="my-4" />
+                            
+                            <div className="space-y-3">
+                              <h4 className="font-medium">Tools Used ({selectedUser.toolsUsed.length})</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {selectedUser.toolsUsed.map((tool, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {tool}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg">Monthly Activity Trend</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <ResponsiveContainer width="100%" height={300}>
+                              <RechartsLineChart data={selectedUser.monthlyActivity}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="month" />
+                                <YAxis />
+                                <Tooltip />
+                                <Line 
+                                  type="monotone" 
+                                  dataKey="toolsUsed" 
+                                  stroke={COLORS[0]} 
+                                  strokeWidth={2}
+                                  name="Tools Used"
+                                />
+                                <Line 
+                                  type="monotone" 
+                                  dataKey="complexity" 
+                                  stroke={COLORS[1]} 
+                                  strokeWidth={2}
+                                  name="Complexity"
+                                />
+                                <Legend />
+                              </RechartsLineChart>
+                            </ResponsiveContainer>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )
+                  })()
                 )}
               </TabsContent>
               
               <TabsContent value="comparison" className="space-y-4">
                 {selectedUsers.size < 2 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Select multiple users to compare their usage patterns
+                    Select multiple users to view comparison analysis
+                  </div>
+                ) : !comparisonData ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Loading comparison data...
                   </div>
                 ) : (
-                  <ComparisonAnalysis 
-                    users={users.filter(u => selectedUsers.has(u.email))}
-                    comparisonData={comparisonData}
-                  />
+                  <div className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg">Average Metrics</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Avg Engagement:</span>
+                              <span className="font-medium">{comparisonData.averageEngagement.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Avg Consistency:</span>
+                              <span className="font-medium">{comparisonData.averageConsistency.toFixed(0)}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Total Tools Used:</span>
+                              <span className="font-medium">{comparisonData.totalToolsUsed}</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg">Risk Distribution</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={150}>
+                            <RechartsPieChart>
+                              <Pie
+                                data={comparisonData.riskDistribution}
+                                dataKey="count"
+                                nameKey="risk"
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={60}
+                                label={({risk, count}) => `${risk}: ${count}`}
+                              >
+                                {comparisonData.riskDistribution.map((entry: any, index: number) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </RechartsPieChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Common Tools</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {comparisonData.commonTools.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {comparisonData.commonTools.map((toolData: any, index: number) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {toolData.tool} ({toolData.count})
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No common tools found among selected users</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Monthly Comparison</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <AreaChart data={comparisonData.monthlyComparison}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip />
+                            <Area 
+                              type="monotone" 
+                              dataKey="averageToolsUsed" 
+                              stackId="1"
+                              stroke={COLORS[0]} 
+                              fill={COLORS[0]}
+                              name="Avg Tools Used"
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="averageComplexity" 
+                              stackId="2"
+                              stroke={COLORS[1]} 
+                              fill={COLORS[1]}
+                              name="Avg Complexity"
+                            />
+                            <Legend />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                  </div>
                 )}
               </TabsContent>
               
               <TabsContent value="trends" className="space-y-4">
-                {selectedUsers.size === 0 ? (
+                {comparisonData && selectedUsers.size > 0 ? (
+                  <div className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Trend Analysis</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={200}>
+                          <BarChart data={comparisonData.trendAnalysis}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="trend" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="count" fill={COLORS[2]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     Select users to view trend analysis
                   </div>
-                ) : (
-                  <TrendsAnalysis 
-                    users={users.filter(u => selectedUsers.has(u.email))}
-                    comparisonData={comparisonData}
-                  />
                 )}
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
-}
-
-function IndividualUserAnalysis({ user }: { user: User }) {
-  return (
-    <div className="space-y-4">
-      <div className="grid md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{user.email}</CardTitle>
-            <CardDescription>
-              <Badge className={getClassificationColor(user.classification)}>
-                {user.classification}
-              </Badge>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Engagement Score</span>
-              <span className="font-medium">{user.engagementScore.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Consistency</span>
-              <span className="font-medium">{user.consistencyPercent.toFixed(1)}%</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Complexity Score</span>
-              <span className="font-medium">{user.complexityScore.toFixed(1)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Avg Tools/Report</span>
-              <span className="font-medium">{user.avgToolsPerReport.toFixed(1)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Report Appearances</span>
-              <span className="font-medium">{user.appearances}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Risk Level</span>
-              <span className="flex items-center gap-1">
-                {getRiskIcon(user.riskLevel)}
-                {user.riskLevel}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Classification Reasoning</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium">Justification:</span>
-                <p className="text-sm text-muted-foreground mt-1">{user.justification}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium">Tools Used:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {user.toolsUsed.map((tool, idx) => (
-                    <Badge key={idx} variant="outline" className="text-xs">
-                      {tool}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <span className="text-sm font-medium">First Seen:</span>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(user.firstAppearance).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <span className="text-sm font-medium">Last Activity:</span>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(user.lastActivity).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Monthly Activity Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
-            <RechartsLineChart data={user.monthlyActivity}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{fontSize: 10}} />
-              <YAxis tick={{fontSize: 10}} />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="toolsUsed" 
-                stroke={COLORS[0]} 
-                strokeWidth={2}
-                name="Tools Used"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="complexity" 
-                stroke={COLORS[1]} 
-                strokeWidth={2}
-                name="Complexity Score"
-              />
-            </RechartsLineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
-function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparisonData: any }) {
-  if (!comparisonData) return null
-  
-  return (
-    <div className="space-y-4">
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Average Metrics</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Engagement</span>
-              <span className="font-medium">{comparisonData.averageEngagement.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Consistency</span>
-              <span className="font-medium">{comparisonData.averageConsistency.toFixed(1)}%</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Unique Tools</span>
-              <span className="font-medium">{comparisonData.totalToolsUsed}</span>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Trend Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={150}>
-              <RechartsPieChart>
-                <Pie
-                  data={comparisonData.trendAnalysis}
-                  dataKey="count"
-                  nameKey="trend"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={60}
-                  label={({trend, count}) => `${trend}: ${count}`}
-                >
-                  {comparisonData.trendAnalysis.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </RechartsPieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Risk Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={150}>
-              <BarChart data={comparisonData.riskDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="risk" tick={{fontSize: 10}} />
-                <YAxis tick={{fontSize: 10}} />
-                <Tooltip />
-                <Bar dataKey="count" fill={COLORS[2]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Monthly Comparison</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={comparisonData.monthlyComparison}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{fontSize: 10}} />
-              <YAxis tick={{fontSize: 10}} />
-              <Tooltip />
-              <Area 
-                type="monotone" 
-                dataKey="averageToolsUsed" 
-                stackId="1"
-                stroke={COLORS[0]} 
-                fill={COLORS[0]}
-                name="Avg Tools Used"
-              />
-              <Area 
-                type="monotone" 
-                dataKey="averageComplexity" 
-                stackId="2"
-                stroke={COLORS[1]} 
-                fill={COLORS[1]}
-                name="Avg Complexity"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
-function TrendsAnalysis({ users, comparisonData }: { users: User[], comparisonData: any }) {
-  if (!comparisonData) return null
-  
-  return (
-    <div className="space-y-4">
-      <div className="grid md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Common Tools</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {comparisonData.commonTools.map((tool: any, index: number) => (
-                <div key={index} className="flex justify-between items-center">
-                  <Badge variant="outline">{tool.tool}</Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {tool.count}/{users.length} users
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">User Timeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {users.map((user, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{user.email}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(user.firstAppearance).toLocaleDateString()} - {new Date(user.lastActivity).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <Badge className={getClassificationColor(user.classification)}>
-                    {user.classification.split(' ')[0]}
-                  </Badge>
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
       </div>
