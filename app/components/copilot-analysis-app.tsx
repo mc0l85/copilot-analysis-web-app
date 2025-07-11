@@ -247,7 +247,7 @@ export function CopilotAnalysisApp() {
   const canAnalyze = fileData.usageReportsFiles.length > 0 && !analysisState.isProcessing
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="w-full px-4 py-8">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-foreground mb-2">
