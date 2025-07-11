@@ -1,9 +1,9 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/api/test-results/route": "app/api/test-results/route.js",
   "/api/analyze/route": "app/api/analyze/route.js",
   "/api/debug/route": "app/api/debug/route.js",
   "/api/deep-dive/route": "app/api/deep-dive/route.js",
   "/page": "app/page.js",
-  "/api/download/[type]/route": "app/api/download/[type]/route.js"
+  "/api/download/[type]/route": "app/api/download/[type]/route.js",
+  "/api/test-results/route": "app/api/test-results/route.js"
 }

@@ -60,7 +60,7 @@ class PersistentAnalysisStore {
       console.log(`Session ${sessionId} loaded from file system`)
       return data
     } catch (error) {
-      console.log(`Session ${sessionId} not found:`, error.message)
+      console.log(`Session ${sessionId} not found:`, error instanceof Error ? error.message : 'Unknown error')
       return undefined
     }
   }

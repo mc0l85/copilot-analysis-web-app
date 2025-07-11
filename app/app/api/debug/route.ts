@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const sessionData: { [key: string]: any } = {}
     
     for (const sessionId of sessions) {
-      const data = analysisResults.get(sessionId)
+      const data = await analysisResults.get(sessionId)
       sessionData[sessionId] = {
         hasResults: !!data,
         hasDetailedUsers: !!(data?.detailed_users),

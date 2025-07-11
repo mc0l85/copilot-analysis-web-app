@@ -13,7 +13,6 @@ from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.formatting.rule import ColorScaleRule, DataBarRule
 import warnings
 warnings.filterwarnings('ignore')
-st.set_page_config(layout="wide")
 class CopilotAnalyzer:
     def __init__(self):
         self.target_user_data = None

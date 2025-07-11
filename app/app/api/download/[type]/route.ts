@@ -71,11 +71,14 @@ export async function GET(
     // Get the result by sessionId or the most recent one
     let result
     if (sessionId) {
-      result = analysisResults.get(sessionId)
+      result = await analysisResults.get(sessionId)
     } else {
       // Get the most recent result from memory
-      const allResults = Array.from(analysisResults.values())
-      result = allResults[allResults.length - 1]
+      const allKeys = await analysisResults.getAllKeys()
+      if (allKeys.length > 0) {
+        const mostRecentKey = allKeys[allKeys.length - 1]
+        result = await analysisResults.get(mostRecentKey)
+      }
     }
     
     // If no result found in memory, try to find from file system
