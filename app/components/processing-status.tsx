@@ -45,8 +45,8 @@ export function ProcessingStatus() {
   }, [])
 
   return (
-    <div className="text-center py-12">
-      <div className="max-w-md mx-auto space-y-6">
+    <div className="text-center py-12 w-full">
+      <div className="max-w-lg mx-auto space-y-6">
         <div className="space-y-2">
           <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
           <h3 className="text-lg font-semibold">Processing Your Data</h3>
