@@ -136,12 +136,6 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         setUsers(userData)
         setFilteredUsers(userData)
         setDataLoaded(true)
-        
-        // Auto-expand details pane by selecting first user if available
-        if (userData.length > 0 && selectedUsers.size === 0) {
-          setSelectedUsers(new Set([userData[0].email]))
-          setActiveTab('individual')
-        }
       }
     } catch (error) {
       // Only set error if this is still the current session
@@ -161,7 +155,7 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         setLoading(false)
       }
     }
-  }, [toast, selectedUsers.size])
+  }, [toast])
 
   // Effect to fetch data when sessionId changes
   useEffect(() => {
@@ -186,6 +180,23 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
       setLoading(false)
     }
   }, [sessionId, fetchUsers])
+
+  // Auto-expand details pane when data loads
+  useEffect(() => {
+    if (dataLoaded && users.length > 0 && selectedUsers.size === 0) {
+      // Auto-select the first user to show details pane
+      const firstUser = users[0]
+      setSelectedUsers(new Set([firstUser.email]))
+      setActiveTab('individual')
+      
+      // Show toast notification about auto-expansion
+      toast({
+        title: "Details pane activated",
+        description: `Auto-selected ${firstUser.email} to show detailed analysis. Click other users to explore more.`,
+        duration: 4000
+      })
+    }
+  }, [dataLoaded, users, selectedUsers.size, toast])
 
   // Memoized filter function to prevent unnecessary re-renders
   const applyFilters = useCallback((userList: User[], query: string, classification: string) => {
@@ -300,6 +311,10 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
       const newSelected = new Set(prev)
       if (newSelected.has(email)) {
         newSelected.delete(email)
+        // If no users selected, go back to overview
+        if (newSelected.size === 0) {
+          setActiveTab('overview')
+        }
       } else {
         newSelected.add(email)
       }
@@ -506,10 +521,10 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
                 {filteredUsers.map((user) => (
                   <div
                     key={user.email}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                       selectedUsers.has(user.email) 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-border hover:bg-muted/50'
+                        ? 'border-primary bg-primary/10 shadow-md scale-[1.02]' 
+                        : 'border-border hover:bg-muted/50 hover:border-primary/50 hover:shadow-sm'
                     }`}
                     onClick={() => toggleUserSelection(user.email)}
                   >
@@ -547,17 +562,26 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
           </CardContent>
         </Card>
 
-        {/* Analysis Panel */}
-        <Card className="lg:col-span-2">
+        {/* Analysis Panel - Details Pane */}
+        <Card className={`lg:col-span-2 transition-all duration-300 ${
+          selectedUsers.size > 0 
+            ? 'border-primary shadow-lg' 
+            : 'border-border'
+        }`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
               Analysis Dashboard
+              {selectedUsers.size > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {selectedUsers.size} selected
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription>
               {selectedUsers.size > 0 
-                ? `Analyzing ${selectedUsers.size} selected user${selectedUsers.size > 1 ? 's' : ''}`
-                : 'Select users to view detailed analysis'
+                ? `Analyzing ${selectedUsers.size} selected user${selectedUsers.size > 1 ? 's' : ''}` 
+                : 'Select users to view detailed analysis and auto-expand details pane'
               }
             </CardDescription>
           </CardHeader>
@@ -565,12 +589,16 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="individual">Individual</TabsTrigger>
-                <TabsTrigger value="comparison">Comparison</TabsTrigger>
+                <TabsTrigger value="individual" className={selectedUsers.size === 1 ? 'bg-primary/10' : ''}>
+                  Individual
+                </TabsTrigger>
+                <TabsTrigger value="comparison" className={selectedUsers.size > 1 ? 'bg-primary/10' : ''}>
+                  Comparison
+                </TabsTrigger>
                 <TabsTrigger value="trends">Trends</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="overview" className="space-y-4">
+              <TabsContent value="overview" className="space-y-4 animate-in fade-in-50 duration-300">
                 <div className="grid md:grid-cols-2 gap-4">
                   <Card>
                     <CardHeader className="pb-3">
@@ -617,45 +645,59 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
                 </div>
               </TabsContent>
               
-              <TabsContent value="individual" className="space-y-4">
+              <TabsContent value="individual" className="space-y-4 animate-in fade-in-50 duration-300">
                 {selectedUsers.size === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Select a user to view detailed individual analysis
+                    <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">Select a User</h3>
+                    <p>Click on a user from the list to view detailed individual analysis</p>
                   </div>
                 ) : selectedUsers.size === 1 ? (
-                  <IndividualUserAnalysis 
-                    user={users.find(u => selectedUsers.has(u.email))!} 
-                  />
+                  <div className="animate-in slide-in-from-right-5 duration-500">
+                    <IndividualUserAnalysis 
+                      user={users.find(u => selectedUsers.has(u.email))!} 
+                    />
+                  </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    Select only one user to view individual analysis
+                    <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">Too Many Users Selected</h3>
+                    <p>Select only one user to view individual analysis</p>
                   </div>
                 )}
               </TabsContent>
               
-              <TabsContent value="comparison" className="space-y-4">
+              <TabsContent value="comparison" className="space-y-4 animate-in fade-in-50 duration-300">
                 {selectedUsers.size < 2 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Select multiple users to compare their usage patterns
+                    <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">Select Multiple Users</h3>
+                    <p>Choose 2 or more users to compare their usage patterns and metrics</p>
                   </div>
                 ) : (
-                  <ComparisonAnalysis 
-                    users={users.filter(u => selectedUsers.has(u.email))}
-                    comparisonData={comparisonData}
-                  />
+                  <div className="animate-in slide-in-from-left-5 duration-500">
+                    <ComparisonAnalysis 
+                      users={users.filter(u => selectedUsers.has(u.email))}
+                      comparisonData={comparisonData}
+                    />
+                  </div>
                 )}
               </TabsContent>
               
-              <TabsContent value="trends" className="space-y-4">
+              <TabsContent value="trends" className="space-y-4 animate-in fade-in-50 duration-300">
                 {selectedUsers.size === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Select users to view trend analysis
+                    <LineChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">Select Users for Trends</h3>
+                    <p>Choose one or more users to view their usage trends and patterns over time</p>
                   </div>
                 ) : (
-                  <TrendsAnalysis 
-                    users={users.filter(u => selectedUsers.has(u.email))}
-                    comparisonData={comparisonData}
-                  />
+                  <div className="animate-in slide-in-from-bottom-5 duration-500">
+                    <TrendsAnalysis 
+                      users={users.filter(u => selectedUsers.has(u.email))}
+                      comparisonData={comparisonData}
+                    />
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
@@ -752,27 +794,29 @@ function IndividualUserAnalysis({ user }: { user: User }) {
           <CardTitle className="text-lg">Monthly Activity Trend</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
-            <RechartsLineChart data={user.monthlyActivity}>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={user.monthlyActivity}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{fontSize: 10}} />
-              <YAxis tick={{fontSize: 10}} />
+              <XAxis dataKey="month" />
+              <YAxis />
               <Tooltip />
-              <Line 
+              <Area 
                 type="monotone" 
                 dataKey="toolsUsed" 
+                stackId="1" 
                 stroke={COLORS[0]} 
-                strokeWidth={2}
+                fill={COLORS[0]} 
                 name="Tools Used"
               />
-              <Line 
+              <Area 
                 type="monotone" 
                 dataKey="complexity" 
+                stackId="2" 
                 stroke={COLORS[1]} 
-                strokeWidth={2}
+                fill={COLORS[1]} 
                 name="Complexity Score"
               />
-            </RechartsLineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
@@ -782,7 +826,7 @@ function IndividualUserAnalysis({ user }: { user: User }) {
 
 function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparisonData: any }) {
   if (!comparisonData) return null
-  
+
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-3 gap-4">
@@ -800,7 +844,7 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
               <span className="font-medium">{comparisonData.averageConsistency.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Unique Tools</span>
+              <span className="text-sm text-muted-foreground">Total Tools</span>
               <span className="font-medium">{comparisonData.totalToolsUsed}</span>
             </div>
           </CardContent>
@@ -808,27 +852,17 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Trend Distribution</CardTitle>
+            <CardTitle className="text-lg">Common Tools</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={150}>
-              <RechartsPieChart>
-                <Pie
-                  data={comparisonData.trendAnalysis}
-                  dataKey="count"
-                  nameKey="trend"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={60}
-                  label={({trend, count}) => `${trend}: ${count}`}
-                >
-                  {comparisonData.trendAnalysis.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </RechartsPieChart>
-            </ResponsiveContainer>
+            <div className="space-y-2">
+              {comparisonData.commonTools.slice(0, 5).map((tool: any, idx: number) => (
+                <div key={idx} className="flex justify-between text-sm">
+                  <span className="truncate">{tool.tool}</span>
+                  <span className="text-muted-foreground">{tool.count}</span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
         
@@ -838,13 +872,22 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={150}>
-              <BarChart data={comparisonData.riskDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="risk" tick={{fontSize: 10}} />
-                <YAxis tick={{fontSize: 10}} />
+              <RechartsPieChart>
+                <Pie
+                  data={comparisonData.riskDistribution}
+                  dataKey="count"
+                  nameKey="risk"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={60}
+                  label={({risk, count}) => `${risk}: ${count}`}
+                >
+                  {comparisonData.riskDistribution.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip />
-                <Bar dataKey="count" fill={COLORS[2]} />
-              </BarChart>
+              </RechartsPieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -856,28 +899,24 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={comparisonData.monthlyComparison}>
+            <RechartsLineChart data={comparisonData.monthlyComparison}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{fontSize: 10}} />
-              <YAxis tick={{fontSize: 10}} />
+              <XAxis dataKey="month" />
+              <YAxis />
               <Tooltip />
-              <Area 
+              <Line 
                 type="monotone" 
                 dataKey="averageToolsUsed" 
-                stackId="1"
                 stroke={COLORS[0]} 
-                fill={COLORS[0]}
                 name="Avg Tools Used"
               />
-              <Area 
+              <Line 
                 type="monotone" 
                 dataKey="averageComplexity" 
-                stackId="2"
                 stroke={COLORS[1]} 
-                fill={COLORS[1]}
                 name="Avg Complexity"
               />
-            </AreaChart>
+            </RechartsLineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
@@ -887,52 +926,87 @@ function ComparisonAnalysis({ users, comparisonData }: { users: User[], comparis
 
 function TrendsAnalysis({ users, comparisonData }: { users: User[], comparisonData: any }) {
   if (!comparisonData) return null
-  
+
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Common Tools</CardTitle>
+            <CardTitle className="text-lg">Trend Analysis</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {comparisonData.commonTools.map((tool: any, index: number) => (
-                <div key={index} className="flex justify-between items-center">
-                  <Badge variant="outline">{tool.tool}</Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {tool.count}/{users.length} users
-                  </span>
-                </div>
-              ))}
-            </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={comparisonData.trendAnalysis}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="trend" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill={COLORS[2]} />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">User Timeline</CardTitle>
+            <CardTitle className="text-lg">Selected Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {users.map((user, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{user.email}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(user.firstAppearance).toLocaleDateString()} - {new Date(user.lastActivity).toLocaleDateString()}
-                    </div>
+            <div className="space-y-2">
+              {users.map((user, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2 rounded border">
+                  <span className="text-sm font-medium truncate">{user.email}</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className={`text-xs ${getClassificationColor(user.classification)}`}>
+                      {user.classification.split(' ')[0]}
+                    </Badge>
+                    {getTrendIcon(user.trend)}
                   </div>
-                  <Badge className={getClassificationColor(user.classification)}>
-                    {user.classification.split(' ')[0]}
-                  </Badge>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
       </div>
+      
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Engagement Trends Over Time</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <RechartsLineChart data={comparisonData.monthlyComparison}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Line 
+                type="monotone" 
+                dataKey="averageToolsUsed" 
+                stroke={COLORS[0]} 
+                strokeWidth={2}
+                name="Tools Used"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="averageComplexity" 
+                stroke={COLORS[1]} 
+                strokeWidth={2}
+                name="Complexity"
+              />
+            </RechartsLineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </div>
   )
+}
+
+function getTrendIcon(trend: string) {
+  switch (trend) {
+    case 'Increasing': return <TrendingUp className="h-4 w-4 text-green-600" />
+    case 'Decreasing': return <TrendingDown className="h-4 w-4 text-red-600" />
+    case 'Stable': return <Minus className="h-4 w-4 text-yellow-600" />
+    default: return <Minus className="h-4 w-4 text-gray-600" />
+  }
 }
