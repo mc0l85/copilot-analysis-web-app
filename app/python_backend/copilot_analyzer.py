@@ -355,7 +355,7 @@ class CopilotAnalyzer:
                 if not top_user_activity.empty and tool_cols:
                     tool_usage_counts = top_user_activity[tool_cols].notna().sum().sort_values(ascending=False)
                     if not tool_usage_counts.empty:
-                        tool_usage_counts.index = tool_usage_counts.index.str.replace('Last activity date of ', '').str.replace(' \(UTC\)', '')
+                        tool_usage_counts.index = tool_usage_counts.index.str.replace('Last activity date of ', '').str.replace(r' \(UTC\)', '')
                         plt.figure(figsize=(12, 7))
                         tool_usage_counts.plot(kind='bar', title='Most Commonly Used Tools by Top Utilizers')
                         plt.ylabel('Number of Top Users Using Tool')
