@@ -91,6 +91,15 @@ function getRiskIcon(risk: string) {
   }
 }
 
+function getTrendIcon(trend: string) {
+  switch (trend) {
+    case 'Increasing': return <TrendingUp className="h-4 w-4 text-green-600" />
+    case 'Decreasing': return <TrendingDown className="h-4 w-4 text-red-600" />
+    case 'Stable': return <Minus className="h-4 w-4 text-yellow-600" />
+    default: return <Minus className="h-4 w-4 text-gray-600" />
+  }
+}
+
 export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
@@ -155,7 +164,7 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
         setLoading(false)
       }
     }
-  }, [toast])
+  }, [toast]) // Removed selectedUsers.size from dependencies to prevent infinite loop
 
   // Effect to fetch data when sessionId changes
   useEffect(() => {
@@ -311,10 +320,6 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
       const newSelected = new Set(prev)
       if (newSelected.has(email)) {
         newSelected.delete(email)
-        // If no users selected, go back to overview
-        if (newSelected.size === 0) {
-          setActiveTab('overview')
-        }
       } else {
         newSelected.add(email)
       }
@@ -343,15 +348,6 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
       setActiveTab('individual')
     }
   }, [filteredUsers])
-
-  const getTrendIcon = useCallback((trend: string) => {
-    switch (trend) {
-      case 'Increasing': return <TrendingUp className="h-4 w-4 text-green-600" />
-      case 'Decreasing': return <TrendingDown className="h-4 w-4 text-red-600" />
-      case 'Stable': return <Minus className="h-4 w-4 text-yellow-600" />
-      default: return <Minus className="h-4 w-4 text-gray-600" />
-    }
-  }, [])
 
   // Memoized statistics to prevent unnecessary recalculations
   const classificationStats = useMemo(() => {
@@ -521,10 +517,10 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
                 {filteredUsers.map((user) => (
                   <div
                     key={user.email}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                       selectedUsers.has(user.email) 
-                        ? 'border-primary bg-primary/10 shadow-md scale-[1.02]' 
-                        : 'border-border hover:bg-muted/50 hover:border-primary/50 hover:shadow-sm'
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-border hover:bg-muted/50'
                     }`}
                     onClick={() => toggleUserSelection(user.email)}
                   >
@@ -562,26 +558,17 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
           </CardContent>
         </Card>
 
-        {/* Analysis Panel - Details Pane */}
-        <Card className={`lg:col-span-2 transition-all duration-300 ${
-          selectedUsers.size > 0 
-            ? 'border-primary shadow-lg' 
-            : 'border-border'
-        }`}>
+        {/* Analysis Panel */}
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
               Analysis Dashboard
-              {selectedUsers.size > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {selectedUsers.size} selected
-                </Badge>
-              )}
             </CardTitle>
             <CardDescription>
               {selectedUsers.size > 0 
-                ? `Analyzing ${selectedUsers.size} selected user${selectedUsers.size > 1 ? 's' : ''}` 
-                : 'Select users to view detailed analysis and auto-expand details pane'
+                ? `Analyzing ${selectedUsers.size} selected user${selectedUsers.size > 1 ? 's' : ''}`
+                : 'Select users to view detailed analysis'
               }
             </CardDescription>
           </CardHeader>
@@ -589,16 +576,12 @@ export function DeepDiveAnalysis({ sessionId }: DeepDiveAnalysisProps) {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="individual" className={selectedUsers.size === 1 ? 'bg-primary/10' : ''}>
-                  Individual
-                </TabsTrigger>
-                <TabsTrigger value="comparison" className={selectedUsers.size > 1 ? 'bg-primary/10' : ''}>
-                  Comparison
-                </TabsTrigger>
+                <TabsTrigger value="individual">Individual</TabsTrigger>
+                <TabsTrigger value="comparison">Comparison</TabsTrigger>
                 <TabsTrigger value="trends">Trends</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="overview" className="space-y-4 animate-in fade-in-50 duration-300">
+              <TabsContent value="overview" className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <Card>
                     <CardHeader className="pb-3">
@@ -1000,13 +983,4 @@ function TrendsAnalysis({ users, comparisonData }: { users: User[], comparisonDa
       </Card>
     </div>
   )
-}
-
-function getTrendIcon(trend: string) {
-  switch (trend) {
-    case 'Increasing': return <TrendingUp className="h-4 w-4 text-green-600" />
-    case 'Decreasing': return <TrendingDown className="h-4 w-4 text-red-600" />
-    case 'Stable': return <Minus className="h-4 w-4 text-yellow-600" />
-    default: return <Minus className="h-4 w-4 text-gray-600" />
-  }
 }
