@@ -202,7 +202,7 @@ class CopilotAnalyzer:
     def classify_users(self, usage_df, total_months_in_period):
         """Classify users into categories"""
         reference_date = usage_df['Report Refresh Date'].max()
-        thirty_days_ago = reference_date - timedelta(days=30)
+        ninety_days_grace = reference_date - timedelta(days=90)
         sixty_days_ago = reference_date - timedelta(days=60)
         ninety_days_ago = reference_date - timedelta(days=90)
         
@@ -210,7 +210,7 @@ class CopilotAnalyzer:
         
         for _, row in self.utilized_metrics_df.iterrows():
             email = row['Email']
-            is_new_user = pd.notna(row['First Appearance']) and row['First Appearance'] > thirty_days_ago
+            is_new_user = pd.notna(row['First Appearance']) and row['First Appearance'] > ninety_days_grace
             
             if is_new_user:
                 under_utilized_emails.add(email)
@@ -244,9 +244,9 @@ class CopilotAnalyzer:
         # Add justifications
         def get_justification(row, total_months):
             reasons = []
-            is_new_user = pd.notna(row['First Appearance']) and row['First Appearance'] > thirty_days_ago
+            is_new_user = pd.notna(row['First Appearance']) and row['First Appearance'] > ninety_days_grace
             if is_new_user:
-                reasons.append("New user (in 30-day grace period)")
+                reasons.append("New user (in 90-day grace period)")
                 
             if row['Usage Complexity'] == 0:
                 reasons.append("No tool usage recorded")
