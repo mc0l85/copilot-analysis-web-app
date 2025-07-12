@@ -332,10 +332,11 @@ export function CopilotAnalysisApp() {
 
         {/* Results Panel - Full width on mobile, 9 columns when results exist, 8 when no results */}
         <div className={`${analysisState.results ? 'xl:col-span-9' : 'xl:col-span-8'}`}>
-          <Card className="h-full min-h-[600px]">
+          <Card className="h-full min-h-[600px] relative">
             <CardContent className="p-6 h-full">
+              {/* Processing Overlay - Positioned absolutely to not affect layout */}
               {analysisState.isProcessing && (
-                <div className="flex items-center justify-center h-full">
+                <div className="absolute inset-0 bg-background/95 backdrop-blur-sm z-10 flex items-center justify-center">
                   <ProcessingStatus />
                 </div>
               )}
